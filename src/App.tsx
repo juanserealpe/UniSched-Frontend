@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { SubjectProvider, useSubjects } from './context/SubjectContext';
 import { SemesterView } from './components/SemesterView';
 import { SelectedSubjectsPanel } from './components/SelectedSubjectsPanel';
 import { AddCustomSubjectModal } from './components/AddCustomSubjectModal';
+import { AcademicOfferingsPage } from './pages/AcademicOfferingsPage';
 import { Plus, ArrowRight } from 'lucide-react';
-import type { SubjectGroup } from './types';
+import type { ValidationResponse } from './types';
 
 const MainLayout = () => {
-  const { selectedSubjectsList, subjects, customSubjects } = useSubjects();
+  const navigate = useNavigate();
+  const { selectedSubjectsList, setValidationData } = useSubjects();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
 
@@ -21,8 +24,6 @@ const MainLayout = () => {
 
     try {
       // 2. Llamar API
-      // Using a relative URL or configured proxy would be best, but hardcoding for demo as per prompt context usually implies localhost
-      // Prompt says: "http://localhost:8080/api/subjects/validate"
       const response = await fetch('http://localhost:8080/api/subjects/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -33,17 +34,18 @@ const MainLayout = () => {
         throw new Error('Network response was not ok');
       }
 
-      const data = await response.json();
+      const data: ValidationResponse = await response.json();
 
       if (!data.isValid) {
         alert(`Validation Failed:\n${data.errors.join('\n')}`);
         return;
       }
 
-      // 4. Success
-      alert('Validation Successful! Proceeding to management view...');
-      console.log('Official Groups:', data.groupsBySubject);
-      console.log('Custom Groups:', customSubjects);
+      // 3. Store validation data in context
+      setValidationData(data);
+
+      // 4. Navigate to offerings page
+      navigate('/offerings');
 
     } catch (error) {
       console.error('API Error:', error);
@@ -123,9 +125,14 @@ const MainLayout = () => {
 
 function App() {
   return (
-    <SubjectProvider>
-      <MainLayout />
-    </SubjectProvider>
+    <BrowserRouter>
+      <SubjectProvider>
+        <Routes>
+          <Route path="/" element={<MainLayout />} />
+          <Route path="/offerings" element={<AcademicOfferingsPage />} />
+        </Routes>
+      </SubjectProvider>
+    </BrowserRouter>
   );
 }
 

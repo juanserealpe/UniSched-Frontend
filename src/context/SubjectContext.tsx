@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo, useState, useCallback } from 'react';
-import type { Subject, SubjectGroup, SubjectWithState } from '../types';
+import type { SubjectGroup, SubjectWithState, ValidationResponse } from '../types';
 import { studyPlan } from '../data/studyPlan';
 import { calculateSubjectStates } from '../utils/validation';
 
@@ -12,6 +12,9 @@ interface SubjectContextType {
     removeCustomSubject: (id: string | number) => void; // custom IDs are strings uuid, official are numbers
     // Helper to get full subject objects
     selectedSubjectsList: (SubjectWithState | SubjectGroup)[];
+    // Validation data from API
+    validationData: ValidationResponse | null;
+    setValidationData: (data: ValidationResponse | null) => void;
 }
 
 const SubjectContext = createContext<SubjectContextType | undefined>(undefined);
@@ -19,6 +22,7 @@ const SubjectContext = createContext<SubjectContextType | undefined>(undefined);
 export function SubjectProvider({ children }: { children: React.ReactNode }) {
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [customSubjects, setCustomSubjects] = useState<SubjectGroup[]>([]);
+    const [validationData, setValidationData] = useState<ValidationResponse | null>(null);
 
     // Calculate states for officially defined subjects
     const subjectsWithState = useMemo(() => {
@@ -55,14 +59,6 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
 
     // Combined list for the side panel
     const selectedSubjectsList = useMemo(() => {
-        const officialSelected = subjectsWithState.filter(s => s.status === 'selected' || s.status === 'mandatory-pending');
-        // Note: 'mandatory-pending' usually assumes it IS selected but needs pair. 
-        // Wait, 'mandatory-pending' logic in `calculateSubjectStates`:
-        // "if mandatoryWith and selectedIds.includes(mandatoryWith) -> mandatory-pending"
-        // This implies the current subject is NOT in selectedIds, but its partner IS.
-        // So it is NOT selected yet.
-        // So we only return 'selected' ones.
-
         const official = subjectsWithState.filter(s => selectedIds.includes(s.id));
         return [...official, ...customSubjects];
     }, [subjectsWithState, selectedIds, customSubjects]);
@@ -75,6 +71,8 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
         addCustomSubject,
         removeCustomSubject,
         selectedSubjectsList,
+        validationData,
+        setValidationData,
     };
 
     return (

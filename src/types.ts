@@ -29,3 +29,19 @@ export interface SubjectGroup {
     schedules: Schedule[];
     isCustom: boolean;
 }
+
+// API Response types
+export interface ValidationResponse {
+    isValid: boolean;
+    errors: string[];
+    groupsBySubject: Record<string, ApiSubjectGroup[]>;
+}
+
+export interface ApiSubjectGroup {
+    id: number;
+    subjectId: number;
+    subjectName: string;
+    groupCode: string;
+    professors: string;
+    schedules: Schedule[];
+}
