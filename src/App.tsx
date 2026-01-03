@@ -67,20 +67,22 @@ const MainLayout = () => {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+      <div className="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 items-start pb-48">
 
         {/* Study Plan Area (3 cols) */}
-        <div className="lg:col-span-3 space-y-8">
+        <div className="lg:col-span-3 space-y-8 overflow-hidden">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2 sticky left-0">
               Plan de Estudios
-              <span className="text-sm font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Semestres 1-3</span>
+              <span className="text-sm font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Semestres 1-7</span>
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <SemesterView semester={1} />
-              <SemesterView semester={2} />
-              <SemesterView semester={3} />
+              {Array.from({ length: 7 }, (_, i) => i + 1).map((semester) => (
+                <div key={semester} className="min-w-0">
+                  <SemesterView semester={semester} />
+                </div>
+              ))}
             </div>
           </div>
         </div>
