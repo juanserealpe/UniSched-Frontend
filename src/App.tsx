@@ -17,22 +17,18 @@ const MainLayout = () => {
   const handleContinue = async () => {
     setIsValidating(true);
 
-    // 1. Extraer solo IDs de materias oficiales
     const officialIds = selectedSubjectsList
       .filter((s: any) => !s.isCustom)
-      .map(s => s.id);
+      .map((s) => s.id);
 
     try {
-      // 2. Llamar API
       const response = await fetch('http://localhost:8080/api/subjects/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subjectIds: officialIds })
+        body: JSON.stringify({ subjectIds: officialIds }),
       });
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+      if (!response.ok) throw new Error('Network response was not ok');
 
       const data: ValidationResponse = await response.json();
 
@@ -41,12 +37,8 @@ const MainLayout = () => {
         return;
       }
 
-      // 3. Store validation data in context
       setValidationData(data);
-
-      // 4. Navigate to offerings page
       navigate('/offerings');
-
     } catch (error) {
       console.error('API Error:', error);
       alert('Error connecting to validation API. Check console.');
@@ -61,7 +53,9 @@ const MainLayout = () => {
       <header className="bg-slate-900 text-white p-4 shadow-md sticky top-0 z-20">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-lg">U</div>
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-lg">
+              U
+            </div>
             <h1 className="text-xl font-bold tracking-tight">UNISCHED</h1>
           </div>
           <div className="text-sm text-slate-400">Sistema de Selección de Materias</div>
@@ -69,14 +63,18 @@ const MainLayout = () => {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 items-start pb-48">
-
+      <div className="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         {/* Study Plan Area (3 cols) */}
-        <div className="lg:col-span-3 space-y-8 overflow-hidden">
+        <div
+          className="lg:col-span-3 space-y-8 overflow-auto"
+          style={{ maxHeight: 'calc(100vh - 4rem - 5rem)' }} // 4rem header + 5rem footer aprox
+        >
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2 sticky left-0">
+            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2 sticky top-0 bg-white z-10 px-2">
               Plan de Estudios
-              <span className="text-sm font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Semestres 1-7</span>
+              <span className="text-sm font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                Semestres 1-7
+              </span>
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -90,10 +88,9 @@ const MainLayout = () => {
         </div>
 
         {/* Sidebar (1 col) */}
-        <div className="lg:col-span-1 lg:sticky lg:top-24 h-[calc(100vh-8rem)]">
+        <div className="lg:col-span-1 lg:sticky lg:top-24">
           <SelectedSubjectsPanel />
         </div>
-
       </div>
 
       {/* Footer / Floating Action Bar */}
