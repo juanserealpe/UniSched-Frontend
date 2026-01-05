@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo, useState, useCallback } from 'react';
-import type { SubjectGroup, SubjectWithState, ValidationResponse } from '../types';
+import type { SubjectGroup, SubjectWithState, ValidationResponse, GeneratedSchedule } from '../types';
 import { studyPlan } from '../data/studyPlan';
 import { calculateSubjectStates } from '../utils/validation';
 
@@ -15,6 +15,13 @@ interface SubjectContextType {
     // Validation data from API
     validationData: ValidationResponse | null;
     setValidationData: (data: ValidationResponse | null) => void;
+    // Generated schedules
+    generatedSchedules: GeneratedSchedule[];
+    setGeneratedSchedules: (schedules: GeneratedSchedule[]) => void;
+    isLoadingSchedules: boolean;
+    setIsLoadingSchedules: (loading: boolean) => void;
+    scheduleError: string | null;
+    setScheduleError: (error: string | null) => void;
 }
 
 const SubjectContext = createContext<SubjectContextType | undefined>(undefined);
@@ -23,6 +30,9 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [customSubjects, setCustomSubjects] = useState<SubjectGroup[]>([]);
     const [validationData, setValidationData] = useState<ValidationResponse | null>(null);
+    const [generatedSchedules, setGeneratedSchedules] = useState<GeneratedSchedule[]>([]);
+    const [isLoadingSchedules, setIsLoadingSchedules] = useState(false);
+    const [scheduleError, setScheduleError] = useState<string | null>(null);
 
     // Calculate states for officially defined subjects
     const subjectsWithState = useMemo(() => {
@@ -73,6 +83,12 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
         selectedSubjectsList,
         validationData,
         setValidationData,
+        generatedSchedules,
+        setGeneratedSchedules,
+        isLoadingSchedules,
+        setIsLoadingSchedules,
+        scheduleError,
+        setScheduleError,
     };
 
     return (

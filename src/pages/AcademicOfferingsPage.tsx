@@ -2,12 +2,20 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSubjects } from '../context/SubjectContext';
 import { SubjectOfferingCard } from '../components/SubjectOfferingCard';
-import { ArrowLeft, GraduationCap, Users } from 'lucide-react';
+import { ArrowLeft, GraduationCap, Users, Calendar } from 'lucide-react';
 import type { ApiSubjectGroup } from '../types';
 
 export const AcademicOfferingsPage: React.FC = () => {
     const navigate = useNavigate();
-    const { validationData, customSubjects } = useSubjects();
+    const {
+        validationData,
+        customSubjects,
+        setIsLoadingSchedules,
+        setGeneratedSchedules,
+        setScheduleError,
+        isLoadingSchedules,
+        selectedSubjectsList
+    } = useSubjects();
 
     if (!validationData) {
         // If no validation data, redirect back to selection
@@ -49,8 +57,40 @@ export const AcademicOfferingsPage: React.FC = () => {
     const totalSubjects = allSubjectsWithGroups.length;
     const totalGroups = allSubjectsWithGroups.reduce((sum, subject) => sum + subject.groups.length, 0);
 
+    const handleGenerateSchedules = async () => {
+        setIsLoadingSchedules(true);
+        setScheduleError(null);
+
+        const officialIds = selectedSubjectsList
+            .filter((s: any) => !s.isCustom)
+            .map((s) => s.id);
+
+        try {
+            const response = await fetch('http://localhost:8080/api/subjects/generate-schedules', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subjectIds: officialIds }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Error al generar horarios');
+            }
+
+            const data = await response.json();
+            setGeneratedSchedules(data);
+            navigate('/schedules');
+        } catch (error: any) {
+            console.error('Generation Error:', error);
+            setScheduleError(error.message || 'Error de conexión con el servidor');
+            alert(error.message || 'No se pudieron generar los horarios. Intenta de nuevo.');
+        } finally {
+            setIsLoadingSchedules(false);
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900">
+        <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900 pb-24">
             {/* Header */}
             <header className="bg-slate-900 text-white p-4 shadow-md sticky top-0 z-20">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -121,6 +161,37 @@ export const AcademicOfferingsPage: React.FC = () => {
                             />
                         ))
                     )}
+                </div>
+            </div>
+
+            {/* Footer / Floating Action Bar */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-30">
+                <div className="max-w-7xl mx-auto flex items-center justify-between">
+                    <button
+                        onClick={() => navigate('/')}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors"
+                    >
+                        <ArrowLeft size={20} />
+                        Volver
+                    </button>
+
+                    <button
+                        onClick={handleGenerateSchedules}
+                        disabled={isLoadingSchedules || totalSubjects === 0}
+                        className="flex items-center gap-2 px-8 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg hover:shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoadingSchedules ? (
+                            <>
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Generando...
+                            </>
+                        ) : (
+                            <>
+                                <Calendar size={20} />
+                                Generar Horarios
+                            </>
+                        )}
+                    </button>
                 </div>
             </div>
         </div>

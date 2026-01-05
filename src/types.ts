@@ -45,3 +45,5 @@ export interface ApiSubjectGroup {
     professors: string;
     schedules: Schedule[];
 }
+
+export type GeneratedSchedule = ApiSubjectGroup[];

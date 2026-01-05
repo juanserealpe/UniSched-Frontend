@@ -5,6 +5,7 @@ import { SemesterView } from './components/SemesterView';
 import { SelectedSubjectsPanel } from './components/SelectedSubjectsPanel';
 import { AddCustomSubjectModal } from './components/AddCustomSubjectModal';
 import { AcademicOfferingsPage } from './pages/AcademicOfferingsPage';
+import { GeneratedSchedulesPage } from './pages/GeneratedSchedulesPage';
 import { Plus, ArrowRight } from 'lucide-react';
 import type { ValidationResponse } from './types';
 
@@ -127,6 +128,7 @@ function App() {
         <Routes>
           <Route path="/" element={<MainLayout />} />
           <Route path="/offerings" element={<AcademicOfferingsPage />} />
+          <Route path="/schedules" element={<GeneratedSchedulesPage />} />
         </Routes>
       </SubjectProvider>
     </BrowserRouter>
