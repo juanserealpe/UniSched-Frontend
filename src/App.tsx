@@ -16,6 +16,11 @@ const MainLayout = () => {
   const [isValidating, setIsValidating] = useState(false);
 
   const handleContinue = async () => {
+    if (selectedSubjectsList.length === 0) {
+      alert('Debes seleccionar al menos una materia antes de continuar');
+      return;
+    }
+
     setIsValidating(true);
 
     const officialIds = selectedSubjectsList

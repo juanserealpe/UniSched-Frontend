@@ -14,7 +14,8 @@ export const AcademicOfferingsPage: React.FC = () => {
         setGeneratedSchedules,
         setScheduleError,
         isLoadingSchedules,
-        selectedSubjectsList
+        selectedSubjectsList,
+        selectedIds
     } = useSubjects();
 
     if (!validationData) {
@@ -31,11 +32,12 @@ export const AcademicOfferingsPage: React.FC = () => {
         isCustom: boolean;
     }> = [];
 
-    // Add official subjects from validation data
+    // Add official subjects from validation data (only if they are currently selected)
     Object.entries(validationData.groupsBySubject).forEach(([subjectId, groups]) => {
-        if (groups.length > 0) {
+        const id = parseInt(subjectId, 10);
+        if (groups.length > 0 && selectedIds.includes(id)) {
             allSubjectsWithGroups.push({
-                subjectId: parseInt(subjectId, 10),
+                subjectId: id,
                 subjectName: groups[0].subjectName,
                 groups: groups,
                 isCustom: false,

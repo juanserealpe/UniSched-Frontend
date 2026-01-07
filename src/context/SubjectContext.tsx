@@ -10,6 +10,7 @@ interface SubjectContextType {
     toggleSubject: (id: number) => void;
     addCustomSubject: (subject: SubjectGroup) => void;
     removeCustomSubject: (id: string | number) => void; // custom IDs are strings uuid, official are numbers
+    clearAllSubjects: () => void;
     // Helper to get full subject objects
     selectedSubjectsList: (SubjectWithState | SubjectGroup)[];
     // Validation data from API
@@ -67,6 +68,13 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
         setCustomSubjects(prev => prev.filter(s => s.id !== id));
     }, []);
 
+    const clearAllSubjects = useCallback(() => {
+        setSelectedIds([]);
+        setCustomSubjects([]);
+        setValidationData(null);
+        setGeneratedSchedules([]);
+    }, []);
+
     // Combined list for the side panel
     const selectedSubjectsList = useMemo(() => {
         const official = subjectsWithState.filter(s => selectedIds.includes(s.id));
@@ -80,6 +88,7 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
         toggleSubject,
         addCustomSubject,
         removeCustomSubject,
+        clearAllSubjects,
         selectedSubjectsList,
         validationData,
         setValidationData,

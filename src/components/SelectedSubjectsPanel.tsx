@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { useSubjects } from '../context/SubjectContext';
 import { Trash2 } from 'lucide-react';
 import { Modal } from './Modal';
-import type { SubjectGroup, SubjectWithState } from '../types';
 
 export const SelectedSubjectsPanel: React.FC = () => {
-    const { selectedSubjectsList, toggleSubject, removeCustomSubject } = useSubjects();
+    const { selectedSubjectsList, toggleSubject, removeCustomSubject, clearAllSubjects } = useSubjects();
     const [confirmDelete, setConfirmDelete] = useState<{ id: string | number; name: string; isCustom: boolean } | null>(null);
+    const [isClearAllModalOpen, setIsClearAllModalOpen] = useState(false);
 
     const handleDeleteClick = (item: any) => {
         setConfirmDelete({
@@ -27,14 +27,29 @@ export const SelectedSubjectsPanel: React.FC = () => {
         setConfirmDelete(null);
     };
 
+    const handleClearAll = () => {
+        clearAllSubjects();
+        setIsClearAllModalOpen(false);
+    };
+
     const totalSubjects = selectedSubjectsList.length;
 
     return (
         <>
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
-                <div className="p-4 border-b bg-slate-50">
-                    <h2 className="font-semibold text-slate-800">Materias Seleccionadas</h2>
-                    <div className="text-xs text-slate-500 mt-1">Total: {totalSubjects} materias</div>
+                <div className="p-4 border-b bg-slate-50 flex items-center justify-between">
+                    <div>
+                        <h2 className="font-semibold text-slate-800">Materias Seleccionadas</h2>
+                        <div className="text-xs text-slate-500 mt-1">Total: {totalSubjects} materias</div>
+                    </div>
+                    {totalSubjects > 0 && (
+                        <button
+                            onClick={() => setIsClearAllModalOpen(true)}
+                            className="text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1.5 rounded-lg transition-colors"
+                        >
+                            Eliminar Todo
+                        </button>
+                    )}
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-2 space-y-2">
@@ -59,7 +74,7 @@ export const SelectedSubjectsPanel: React.FC = () => {
 
                             <button
                                 onClick={() => handleDeleteClick(item)}
-                                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                 title="Eliminar materia"
                             >
                                 <Trash2 size={16} />
@@ -98,6 +113,32 @@ export const SelectedSubjectsPanel: React.FC = () => {
                         Esto podría desbloquear materias que dependen de ella.
                     </p>
                 )}
+            </Modal>
+
+            <Modal
+                isOpen={isClearAllModalOpen}
+                onClose={() => setIsClearAllModalOpen(false)}
+                title="¿Eliminar Todas las Materias?"
+                footer={
+                    <>
+                        <button
+                            onClick={() => setIsClearAllModalOpen(false)}
+                            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={handleClearAll}
+                            className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-sm"
+                        >
+                            Eliminar Todo
+                        </button>
+                    </>
+                }
+            >
+                <p className="text-slate-600">
+                    ¿Estás seguro de que deseas eliminar todas las materias seleccionadas? Esta acción no se puede deshacer.
+                </p>
             </Modal>
         </>
     );
