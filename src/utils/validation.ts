@@ -35,12 +35,9 @@ export function calculateSubjectStates(studyPlan: Subject[], selectedIds: number
         const subject = studyPlan.find(s => s.id === selectedId);
         if (!subject) return;
 
-        // Effective IDs include the selected subject AND its mandatory partner (if any)
-        // e.g. Selected Lab (6) -> blocks as if Theory (5) was also selected
+        // Effective IDs only includes the selected subject now.
+        // We no longer block descendants/ancestors of the partner automatically.
         const effectiveIds = [selectedId];
-        if (subject.mandatoryWith) {
-            effectiveIds.push(subject.mandatoryWith);
-        }
 
         effectiveIds.forEach(id => {
             // Block all descendants (children, grandchildren, etc.)
@@ -54,39 +51,38 @@ export function calculateSubjectStates(studyPlan: Subject[], selectedIds: number
     });
 
     return studyPlan.map(subject => {
+        let result: SubjectWithState;
+
         // 1. Si está seleccionada
         if (selectedIds.includes(subject.id)) {
-            return { ...subject, status: 'selected' };
+            result = { ...subject, status: 'selected' };
         }
-
         // 2. Si está en la lista de bloqueadosrecursivos
-        if (blockedIds.has(subject.id)) {
-            return {
+        else if (blockedIds.has(subject.id)) {
+            result = {
                 ...subject,
                 status: 'blocked',
                 blockReason: 'Conflicto con materia seleccionada (dependencia directa o indirecta)'
             };
         }
-
-        // 2.1. Propagation: If my partner is blocked, I am blocked.
-        if (subject.mandatoryWith && blockedIds.has(subject.mandatoryWith)) {
-            return {
-                ...subject,
-                status: 'blocked',
-                blockReason: 'La materia complementaria (teoría/lab) tiene un conflicto'
-            };
-        }
-
-        // 3. Si tiene materia obligatoria y la otra está seleccionada
-        if (subject.mandatoryWith && selectedIds.includes(subject.mandatoryWith)) {
-            return {
-                ...subject,
-                status: 'mandatory-pending',
-                blockReason: 'Debes seleccionar ambas materias juntas'
-            };
-        }
-
         // Disponible
-        return { ...subject, status: 'available' };
+        else {
+            result = { ...subject, status: 'available' };
+        }
+
+        // Add warnings for mandatory pairs
+        if (subject.mandatoryWith) {
+            const partner = studyPlan.find(s => s.id === subject.mandatoryWith);
+            const isSelfSelected = selectedIds.includes(subject.id);
+            const isPartnerSelected = selectedIds.includes(subject.mandatoryWith);
+
+            if (isSelfSelected && !isPartnerSelected) {
+                result.warning = `Falta materia complementaria (${partner?.name})`;
+            } else if (!isSelfSelected && isPartnerSelected && result.status === 'available') {
+                result.warning = `Se recomienda cursar con ${partner?.name}`;
+            }
+        }
+
+        return result;
     });
 }

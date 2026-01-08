@@ -1,4 +1,4 @@
-export type SubjectStatus = 'available' | 'blocked' | 'selected' | 'mandatory-pending';
+export type SubjectStatus = 'available' | 'blocked' | 'selected';
 
 export interface Subject {
     id: number;
@@ -12,6 +12,7 @@ export interface Subject {
 export interface SubjectWithState extends Subject {
     status: SubjectStatus;
     blockReason?: string;
+    warning?: string;
 }
 
 export interface Schedule {
