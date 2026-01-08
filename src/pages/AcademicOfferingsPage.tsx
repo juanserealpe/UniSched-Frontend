@@ -26,7 +26,7 @@ export const AcademicOfferingsPage: React.FC = () => {
 
     // Combine official subjects with their groups and custom subjects
     const allSubjectsWithGroups: Array<{
-        subjectId: number;
+        subjectId: number | string;
         subjectName: string;
         groups: ApiSubjectGroup[];
         isCustom: boolean;
@@ -45,12 +45,19 @@ export const AcademicOfferingsPage: React.FC = () => {
         }
     });
 
-    // Add custom subjects (they won't have groups from API)
+    // Add custom subjects
     customSubjects.forEach((customSubject) => {
         allSubjectsWithGroups.push({
-            subjectId: typeof customSubject.id === 'number' ? customSubject.id : customSubject.subjectId,
+            subjectId: customSubject.id,
             subjectName: customSubject.subjectName,
-            groups: [],
+            groups: [{
+                id: customSubject.id as any,
+                subjectId: customSubject.subjectId,
+                subjectName: customSubject.subjectName,
+                groupCode: customSubject.groupCode || 'GRUPO',
+                professors: customSubject.professors || 'Personalizado',
+                schedules: customSubject.schedules
+            }],
             isCustom: true,
         });
     });
@@ -67,11 +74,26 @@ export const AcademicOfferingsPage: React.FC = () => {
             .filter((s: any) => !s.isCustom)
             .map((s) => s.id);
 
+        const formatTime = (time: string) => time.split(':').length === 2 ? `${time}:00` : time;
+
+        const payload = {
+            subjectIds: officialIds,
+            customSubjects: customSubjects.map(cs => ({
+                name: cs.subjectName,
+                groupCode: cs.groupCode || '',
+                schedules: cs.schedules.map(sch => ({
+                    dayOfWeek: sch.dayOfWeek,
+                    startTime: formatTime(sch.startTime),
+                    endTime: formatTime(sch.endTime)
+                }))
+            }))
+        };
+
         try {
             const response = await fetch('http://localhost:8080/api/subjects/generate-schedules', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subjectIds: officialIds }),
+                body: JSON.stringify(payload),
             });
 
             if (!response.ok) {

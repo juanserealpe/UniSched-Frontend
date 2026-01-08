@@ -7,7 +7,7 @@ import { Modal } from './Modal';
 
 interface SubjectOfferingCardProps {
     subjectName: string;
-    subjectId: number;
+    subjectId: number | string;
     groups: ApiSubjectGroup[];
     isCustom?: boolean;
 }
@@ -32,7 +32,7 @@ export const SubjectOfferingCard: React.FC<SubjectOfferingCardProps> = ({
     };
 
     const confirmRemoval = () => {
-        toggleSubject(subjectId);
+        toggleSubject(subjectId as number);
         setShowDeleteConfirm(false);
     };
 

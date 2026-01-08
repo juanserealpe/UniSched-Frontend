@@ -118,7 +118,7 @@ export const GeneratedSchedulesPage: React.FC = () => {
                             </div>
                             <div className="text-xs">
                                 <div className="font-bold text-amber-800 mb-0.5">Materias Custom ({customSubjects.length})</div>
-                                <div className="text-amber-700">No incluidas en validación de conflictos por backend.</div>
+                                <div className="text-amber-700">Incluidas en la validación de conflictos por el servidor.</div>
                             </div>
                         </div>
                     )}

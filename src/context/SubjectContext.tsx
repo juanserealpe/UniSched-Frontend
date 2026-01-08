@@ -28,12 +28,38 @@ interface SubjectContextType {
 const SubjectContext = createContext<SubjectContextType | undefined>(undefined);
 
 export function SubjectProvider({ children }: { children: React.ReactNode }) {
-    const [selectedIds, setSelectedIds] = useState<number[]>([]);
-    const [customSubjects, setCustomSubjects] = useState<SubjectGroup[]>([]);
-    const [validationData, setValidationData] = useState<ValidationResponse | null>(null);
+    const [selectedIds, setSelectedIds] = useState<number[]>(() => {
+        const saved = localStorage.getItem('selectedIds');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [customSubjects, setCustomSubjects] = useState<SubjectGroup[]>(() => {
+        const saved = localStorage.getItem('customSubjects');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [validationData, setValidationData] = useState<ValidationResponse | null>(() => {
+        const saved = localStorage.getItem('validationData');
+        return saved ? JSON.parse(saved) : null;
+    });
     const [generatedSchedules, setGeneratedSchedules] = useState<GeneratedSchedule[]>([]);
     const [isLoadingSchedules, setIsLoadingSchedules] = useState(false);
     const [scheduleError, setScheduleError] = useState<string | null>(null);
+
+    // Persist to localStorage
+    React.useEffect(() => {
+        localStorage.setItem('selectedIds', JSON.stringify(selectedIds));
+    }, [selectedIds]);
+
+    React.useEffect(() => {
+        localStorage.setItem('customSubjects', JSON.stringify(customSubjects));
+    }, [customSubjects]);
+
+    React.useEffect(() => {
+        if (validationData) {
+            localStorage.setItem('validationData', JSON.stringify(validationData));
+        } else {
+            localStorage.removeItem('validationData');
+        }
+    }, [validationData]);
 
     // Calculate states for officially defined subjects
     const subjectsWithState = useMemo(() => {
