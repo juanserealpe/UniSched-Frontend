@@ -70,24 +70,38 @@ export const AcademicOfferingsPage: React.FC = () => {
         setIsLoadingSchedules(true);
         setScheduleError(null);
 
+        // Filtrar solo IDs de materias oficiales (números positivos)
         const officialIds = selectedSubjectsList
-            .filter((s: any) => !s.isCustom)
+            .filter((s: any) => !s.isCustom && typeof s.id === 'number')
             .map((s) => s.id);
 
-        const formatTime = (time: string) => time.split(':').length === 2 ? `${time}:00` : time;
+        // Formatear tiempo para asegurar formato HH:mm:ss
+        const formatTime = (time: string) => {
+            // Si ya tiene formato HH:mm:ss, devolverlo
+            if (time.split(':').length === 3) return time;
+            // Si tiene formato HH:mm, agregar :00
+            if (time.split(':').length === 2) return `${time}:00`;
+            // Fallback
+            return time;
+        };
 
+        // Construir payload según el DTO del backend
         const payload = {
-            subjectIds: officialIds,
-            customSubjects: customSubjects.map(cs => ({
+            // Array de IDs de materias oficiales (no puede estar vacío si no hay custom)
+            subjectIds: officialIds.length > 0 ? officialIds : [],
+            // Array de materias custom (puede ser null/undefined si no hay)
+            customSubjects: customSubjects.length > 0 ? customSubjects.map(cs => ({
                 name: cs.subjectName,
-                groupCode: cs.groupCode || '',
+                groupCode: cs.groupCode || null, // null si está vacío
                 schedules: cs.schedules.map(sch => ({
                     dayOfWeek: sch.dayOfWeek,
                     startTime: formatTime(sch.startTime),
                     endTime: formatTime(sch.endTime)
                 }))
-            }))
+            })) : null
         };
+
+        console.log('Payload siendo enviado:', JSON.stringify(payload, null, 2));
 
         try {
             const response = await fetch('http://localhost:8080/api/subjects/generate-schedules', {
@@ -98,16 +112,18 @@ export const AcademicOfferingsPage: React.FC = () => {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Error al generar horarios');
+                console.error('Error del servidor:', errorData);
+                throw new Error(errorData.errors?.[0] || errorData.message || 'Error al generar horarios');
             }
 
             const data = await response.json();
+            console.log('Horarios recibidos:', data);
             setGeneratedSchedules(data);
             navigate('/schedules');
         } catch (error: any) {
             console.error('Generation Error:', error);
             setScheduleError(error.message || 'Error de conexión con el servidor');
-            alert(error.message || 'No se pudieron generar los horarios. Intenta de nuevo.');
+            alert(`Error: ${error.message || 'No se pudieron generar los horarios. Intenta de nuevo.'}`);
         } finally {
             setIsLoadingSchedules(false);
         }
