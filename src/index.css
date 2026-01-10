@@ -1,19 +1,63 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@theme {
+  --color-unicauca-blue: #00447C;
+  --color-unicauca-blue-light: #00569d;
+  --color-unicauca-red: #D32F2F;
+  --color-unicauca-red-dark: #B71C1C;
+  --color-accent-gold: #C5A059;
+}
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --unicauca-blue: #00447C;
+  --unicauca-blue-light: #00569d;
+  --unicauca-red: #D32F2F;
+  --unicauca-red-dark: #B71C1C;
+  --accent-gold: #C5A059;
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.3);
+
+  font-family: 'Inter', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
+  color-scheme: light;
   background-color: #f8fafc;
-  /* Slate-50 */
   color: #0f172a;
-  /* Slate-900 */
 }
 
 @layer base {
   body {
-    @apply min-h-screen bg-slate-50 text-slate-900 antialiased;
+    @apply min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900;
   }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/30 shadow-sm;
+  }
+
+  .premium-shadow {
+    box-shadow: 0 4px 20px -5px rgba(0, 68, 124, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  .unicauca-gradient {
+    background: linear-gradient(135deg, var(--unicauca-blue) 0%, #002d52 100%);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full border-2 border-slate-100 hover:bg-slate-400 transition-colors;
 }

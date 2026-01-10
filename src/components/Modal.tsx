@@ -21,25 +21,38 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between p-4 border-b">
-                    <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
-                    <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-lg transition-colors">
-                        <X size={20} className="text-slate-500" />
-                    </button>
-                </div>
+        <>
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity z-40" onClick={onClose} />
+            <div className="fixed inset-0 z-50 overflow-y-auto pointer-events-none">
+                <div className="flex min-h-full items-center justify-center p-4 text-center">
+                    <div className="w-full max-w-lg transform overflow-hidden rounded-3xl bg-white text-left align-middle shadow-2xl transition-all pointer-events-auto border border-slate-100">
+                        {/* Header */}
+                        <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-slate-800 leading-tight">
+                                {title}
+                            </h3>
+                            <button
+                                onClick={onClose}
+                                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
 
-                <div className="p-4 overflow-y-auto max-h-[70vh]">
-                    {children}
-                </div>
+                        {/* Body */}
+                        <div className="px-6 py-6 max-h-[70vh] overflow-y-auto custom-scrollbar text-slate-600">
+                            {children}
+                        </div>
 
-                {footer && (
-                    <div className="p-4 border-t bg-slate-50 flex justify-end gap-3">
-                        {footer}
+                        {/* Footer */}
+                        {footer && (
+                            <div className="px-6 py-5 bg-slate-50/80 border-t border-slate-100 flex items-center justify-end gap-3">
+                                {footer}
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
-        </div>
+        </>
     );
 };

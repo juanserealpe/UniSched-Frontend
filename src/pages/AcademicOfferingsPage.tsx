@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSubjects } from '../context/SubjectContext';
 import { SubjectOfferingCard } from '../components/SubjectOfferingCard';
-import { ArrowLeft, GraduationCap, Users, Calendar } from 'lucide-react';
+import { GraduationCap, Calendar } from 'lucide-react';
 import { Header } from '../components/Header';
 import { AddCustomSubjectModal } from '../components/AddCustomSubjectModal';
 import type { ApiSubjectGroup, CustomSubjectRequest } from '../types';
@@ -49,7 +49,7 @@ export const AcademicOfferingsPage: React.FC = () => {
         }
     });
 
-    // Add custom subjects (group them by subject name)
+    // Add custom subjects
     const customSubjectsMap = new Map<string, ApiSubjectGroup[]>();
     customSubjects.forEach((customSubject) => {
         if (!customSubjectsMap.has(customSubject.subjectName)) {
@@ -74,27 +74,20 @@ export const AcademicOfferingsPage: React.FC = () => {
         });
     });
 
-    // Calculate statistics
-    const totalSubjects = allSubjectsWithGroups.length;
-    const totalGroups = allSubjectsWithGroups.reduce((sum, subject) => sum + subject.groups.length, 0);
-
     const handleGenerateSchedules = async () => {
         setIsLoadingSchedules(true);
         setScheduleError(null);
 
-        // Filter official IDs
         const officialIds = selectedSubjectsList
             .filter((s: any) => !s.isCustom && typeof s.id === 'number')
             .map((s) => s.id);
 
-        // Format time to ensure HH:mm:ss format
         const formatTime = (time: string) => {
             if (time.split(':').length === 3) return time;
             if (time.split(':').length === 2) return `${time}:00`;
             return time;
         };
 
-        // Group custom subjects by name to construct the new payload
         const customSubjectsGroupedByName = new Map<string, typeof customSubjects>();
         customSubjects.forEach(cs => {
             if (!customSubjectsGroupedByName.has(cs.subjectName)) {
@@ -103,7 +96,6 @@ export const AcademicOfferingsPage: React.FC = () => {
             customSubjectsGroupedByName.get(cs.subjectName)!.push(cs);
         });
 
-        // Build custom subjects array according to new DTO structure
         const customSubjectsPayload: CustomSubjectRequest[] = Array.from(
             customSubjectsGroupedByName.entries()
         ).map(([name, groups]) => ({
@@ -119,13 +111,10 @@ export const AcademicOfferingsPage: React.FC = () => {
             }))
         }));
 
-        // Build payload
         const payload = {
             subjectIds: officialIds.length > 0 ? officialIds : [],
             customSubjects: customSubjectsPayload.length > 0 ? customSubjectsPayload : null
         };
-
-        console.log('Payload siendo enviado:', JSON.stringify(payload, null, 2));
 
         try {
             const response = await fetch('http://localhost:8080/api/subjects/generate-schedules', {
@@ -136,16 +125,13 @@ export const AcademicOfferingsPage: React.FC = () => {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                console.error('Error del servidor:', errorData);
                 throw new Error(errorData.errors?.[0] || errorData.message || 'Error al generar horarios');
             }
 
             const data = await response.json();
-            console.log('Horarios recibidos:', data);
             setGeneratedSchedules(data);
             navigate('/schedules');
         } catch (error: any) {
-            console.error('Generation Error:', error);
             setScheduleError(error.message || 'Error de conexión con el servidor');
             alert(`Error: ${error.message || 'No se pudieron generar los horarios. Intenta de nuevo.'}`);
         } finally {
@@ -166,59 +152,46 @@ export const AcademicOfferingsPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900 pb-24">
+        <div className="min-h-screen bg-[#F1F5F9] flex flex-col font-sans text-slate-900 pb-24">
             <Header
-                subtitle="Oferta Académica"
+                subtitle="Oferta Académica • Selección de Grupos"
                 showBackButton
                 onBackButtonClick={() => navigate('/')}
             />
 
-            <div className="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-6">
-                {/* Statistics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 bg-blue-100 rounded-lg">
-                                <GraduationCap className="text-blue-600" size={24} />
-                            </div>
-                            <div>
-                                <div className="text-2xl font-bold text-slate-800">{totalSubjects}</div>
-                                <div className="text-sm text-slate-500">Materias Seleccionadas</div>
-                            </div>
-                        </div>
+            <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+                <div className="mb-10 text-center sm:text-left">
+                    <div className="flex items-center gap-3 mb-3 justify-center sm:justify-start">
+                        <div className="h-8 w-1.5 rounded-full bg-unicauca-red shadow-sm" />
+                        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                            Personaliza tu Horario
+                        </h2>
                     </div>
-                    <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 bg-green-100 rounded-lg">
-                                <Users className="text-green-600" size={24} />
-                            </div>
-                            <div>
-                                <div className="text-2xl font-bold text-slate-800">{totalGroups}</div>
-                                <div className="text-sm text-slate-500">Grupos Disponibles</div>
-                            </div>
-                        </div>
-                    </div>
+                    <p className="text-slate-500 text-sm sm:text-base font-medium max-w-2xl">
+                        A continuación se muestran las materias que has seleccionado. Explora los grupos disponibles y ajusta tu selección antes de generar tu horario final.
+                    </p>
                 </div>
 
-                {/* Subject Cards */}
-                <div className="space-y-4">
-                    <h2 className="text-xl font-bold text-slate-800 mb-4">
-                        Explorar Oferta Académica
-                    </h2>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                     {allSubjectsWithGroups.length === 0 ? (
-                        <div className="bg-white rounded-xl p-12 text-center border border-slate-200">
-                            <p className="text-slate-500">No hay materias seleccionadas.</p>
+                        <div className="col-span-full py-20 px-6 rounded-3xl bg-white/50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
+                            <GraduationCap className="text-slate-300 mb-4" size={56} strokeWidth={1} />
+                            <h3 className="text-xl font-bold text-slate-500 mb-2">No hay materias seleccionadas</h3>
+                            <p className="text-slate-400 max-w-sm">
+                                Vuelve al plan de estudios para seleccionar las materias que deseas cursar este semestre.
+                            </p>
                         </div>
                     ) : (
-                        allSubjectsWithGroups.map((subject) => (
-                            <SubjectOfferingCard
-                                key={`${subject.isCustom ? 'custom' : 'official'}-${subject.subjectId}`}
-                                subjectName={subject.subjectName}
-                                subjectId={subject.subjectId}
-                                groups={subject.groups}
-                                isCustom={subject.isCustom}
-                                onEdit={subject.isCustom ? () => handleEditCustomSubject(subject.subjectName, subject.groups) : undefined}
-                            />
+                        allSubjectsWithGroups.map(subject => (
+                            <div key={subject.subjectId} className="h-full">
+                                <SubjectOfferingCard
+                                    subjectName={subject.subjectName}
+                                    subjectId={subject.subjectId}
+                                    groups={subject.groups}
+                                    isCustom={subject.isCustom}
+                                    onEdit={subject.isCustom ? () => handleEditCustomSubject(subject.subjectName, subject.groups) : undefined}
+                                />
+                            </div>
                         ))
                     )}
                 </div>
@@ -234,20 +207,19 @@ export const AcademicOfferingsPage: React.FC = () => {
             />
 
             {/* Footer / Floating Action Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-30">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <button
-                        onClick={() => navigate('/')}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors"
-                    >
-                        <ArrowLeft size={20} />
-                        Volver
-                    </button>
-
+            <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-200 py-6 px-4 shadow-[0_-10px_30px_-5px_rgba(0,0,0,0.05)] z-40">
+                <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                    <div className="hidden sm:flex flex-col">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Estado de Selección</span>
+                        <div className="flex items-center gap-2">
+                            <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-sm shadow-green-200" />
+                            <span className="text-sm font-bold text-slate-700">{allSubjectsWithGroups.length} Materias Listas</span>
+                        </div>
+                    </div>
                     <button
                         onClick={handleGenerateSchedules}
-                        disabled={isLoadingSchedules || totalSubjects === 0}
-                        className="flex items-center gap-2 px-8 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg hover:shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isLoadingSchedules || allSubjectsWithGroups.length === 0}
+                        className="w-full sm:w-auto px-10 py-4 bg-unicauca-red hover:bg-unicauca-red-dark disabled:bg-slate-300 text-white font-extrabold rounded-2xl transition-all duration-300 shadow-lg shadow-unicauca-red/10 hover:shadow-unicauca-red/20 active:scale-95 flex items-center justify-center gap-3 group uppercase tracking-wider text-sm"
                     >
                         {isLoadingSchedules ? (
                             <>
@@ -256,8 +228,8 @@ export const AcademicOfferingsPage: React.FC = () => {
                             </>
                         ) : (
                             <>
-                                <Calendar size={20} />
-                                Generar Horarios
+                                <span>Generar Horarios Alternativos</span>
+                                <Calendar size={20} className="group-hover:rotate-12 transition-transform" />
                             </>
                         )}
                     </button>

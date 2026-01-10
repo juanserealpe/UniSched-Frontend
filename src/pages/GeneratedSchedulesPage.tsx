@@ -14,8 +14,8 @@ export const GeneratedSchedulesPage: React.FC = () => {
         return (
             <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
                 <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 text-center max-w-md">
-                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Calendar className="text-blue-600" size={32} />
+                    <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-100">
+                        <Calendar className="text-unicauca-blue" size={32} />
                     </div>
                     <h2 className="text-xl font-bold text-slate-800 mb-2">No se encontraron horarios</h2>
                     <p className="text-slate-500 mb-6">
@@ -23,7 +23,7 @@ export const GeneratedSchedulesPage: React.FC = () => {
                     </p>
                     <button
                         onClick={() => navigate('/offerings')}
-                        className="w-full py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors"
+                        className="w-full py-3 bg-unicauca-blue text-white font-bold rounded-xl hover:bg-unicauca-blue-light transition-all shadow-lg shadow-unicauca-blue/10 active:scale-95"
                     >
                         Volver a Oferta Académica
                     </button>
@@ -57,8 +57,8 @@ export const GeneratedSchedulesPage: React.FC = () => {
                 rightElement={
                     <div className="flex items-center gap-4">
                         <div className="hidden md:flex flex-col items-end">
-                            <span className="text-xs text-slate-400 uppercase tracking-wider font-bold">Total Encontrados</span>
-                            <span className="text-lg font-mono text-blue-400 font-bold">{totalSchedules}</span>
+                            <span className="text-[10px] text-blue-200/60 uppercase tracking-wider font-bold">Total Encontrados</span>
+                            <span className="text-lg font-mono text-white font-bold">{totalSchedules}</span>
                         </div>
                         <div className="w-px h-8 bg-slate-700 mx-2 hidden md:block"></div>
                         <div className="flex items-center gap-2 bg-slate-800 p-1 rounded-xl border border-slate-700">
@@ -90,7 +90,7 @@ export const GeneratedSchedulesPage: React.FC = () => {
                 {/* Stats and Info Bar */}
                 <div className="flex flex-col md:flex-row gap-4 items-stretch overflow-auto pb-2">
                     <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex items-center gap-4 flex-1 min-w-[200px]">
-                        <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                        <div className="p-2 bg-blue-50 rounded-lg text-unicauca-blue">
                             <Clock size={20} />
                         </div>
                         <div>
