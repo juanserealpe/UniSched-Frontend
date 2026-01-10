@@ -19,23 +19,38 @@ const START_HOUR = 7;
 const END_HOUR = 20; // 8 PM
 const HOURS = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i);
 
-// Helper to generate a consistent color for a subject name
 const getSubjectColor = (subjectName: string) => {
     let hash = 0;
     for (let i = 0; i < subjectName.length; i++) {
         hash = subjectName.charCodeAt(i) + ((hash << 5) - hash);
     }
-    // Using a more curated institutional palette based on Unicauca's colors
+
+    // Expanded palette of 20+ distinguishable institutional/academic colors
     const colors = [
         '#00447C', // Unicauca Blue
         '#D32F2F', // Unicauca Red
+        '#0F172A', // Navy/Slate
+        '#0D9488', // Teal
+        '#7C3AED', // Violet
         '#C5A059', // Accent Gold
-        '#1E293B', // Slate
-        '#0369A1', // Sky
-        '#0F172A', // Dark Indigo
-        '#7C2D12', // Rust brown
+        '#1E293B', // Slate Blue
+        '#991B1B', // Maroon
+        '#0369A1', // Sky Blue
+        '#166534', // Forest Green
+        '#7E22CE', // Purple
+        '#B45309', // Amber/Ochre
+        '#BE123C', // Rose
+        '#334155', // Cool Grey
+        '#15803D', // Emerald
+        '#1D4ED8', // Royal Blue
+        '#A21CAF', // Fuchsia
+        '#C2410C', // Burnt Orange
+        '#0E7490', // Cyan
+        '#4338CA', // Indigo
     ];
-    return colors[Math.abs(hash) % colors.length];
+
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
 };
 
 // Helper to convert "HH:mm:ss" to minutes from 7:00 AM
@@ -106,7 +121,7 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule }) => {
                                 className="border-b border-slate-50/50 flex items-start justify-end pr-4"
                                 style={{ height: `${hourHeight}rem`, paddingTop: '0.5rem' }}
                             >
-                                <span className="text-[10px] font-black text-slate-400 tabular-nums">
+                                <span className="text-[10px] font-bold text-slate-500 tabular-nums">
                                     {hour}:00
                                 </span>
                             </div>
@@ -117,14 +132,14 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule }) => {
                     <div className="flex-1 grid grid-cols-6 relative">
                         {/* Vertical Grid Lines */}
                         {DAYS.map((_, i) => (
-                            <div key={i} className="absolute top-0 bottom-0 border-r border-slate-50/50" style={{ left: `${(i + 1) * (100 / 6)}%` }} />
+                            <div key={i} className="absolute top-0 bottom-0 border-r border-slate-100/60" style={{ left: `${(i + 1) * (100 / 6)}%` }} />
                         ))}
 
                         {/* Horizontal Grid Lines */}
                         {HOURS.map((_, i) => (
                             <div
                                 key={i}
-                                className="absolute left-0 right-0 border-b border-slate-50/50"
+                                className="absolute left-0 right-0 border-b border-slate-100/60"
                                 style={{ top: `${(i + 1) * hourHeight}rem` }}
                             />
                         ))}
