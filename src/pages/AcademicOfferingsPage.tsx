@@ -4,6 +4,7 @@ import { useSubjects } from '../context/SubjectContext';
 import { SubjectOfferingCard } from '../components/SubjectOfferingCard';
 import { ArrowLeft, GraduationCap, Users, Calendar } from 'lucide-react';
 import { Header } from '../components/Header';
+import { AddCustomSubjectModal } from '../components/AddCustomSubjectModal';
 import type { ApiSubjectGroup, CustomSubjectRequest } from '../types';
 
 export const AcademicOfferingsPage: React.FC = () => {
@@ -18,6 +19,9 @@ export const AcademicOfferingsPage: React.FC = () => {
         selectedSubjectsList,
         selectedIds
     } = useSubjects();
+
+    const [editingSubject, setEditingSubject] = React.useState<{ name: string; groups: any[] } | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
 
     if (!validationData) {
         navigate('/');
@@ -149,6 +153,18 @@ export const AcademicOfferingsPage: React.FC = () => {
         }
     };
 
+    const handleEditCustomSubject = (subjectName: string, groups: ApiSubjectGroup[]) => {
+        setEditingSubject({
+            name: subjectName,
+            groups: groups.map(g => ({
+                groupCode: g.groupCode,
+                professors: g.professors,
+                schedules: g.schedules
+            }))
+        });
+        setIsEditModalOpen(true);
+    };
+
     return (
         <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900 pb-24">
             <Header
@@ -201,11 +217,21 @@ export const AcademicOfferingsPage: React.FC = () => {
                                 subjectId={subject.subjectId}
                                 groups={subject.groups}
                                 isCustom={subject.isCustom}
+                                onEdit={subject.isCustom ? () => handleEditCustomSubject(subject.subjectName, subject.groups) : undefined}
                             />
                         ))
                     )}
                 </div>
             </div>
+
+            <AddCustomSubjectModal
+                isOpen={isEditModalOpen}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    setEditingSubject(null);
+                }}
+                initialData={editingSubject}
+            />
 
             {/* Footer / Floating Action Bar */}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-30">

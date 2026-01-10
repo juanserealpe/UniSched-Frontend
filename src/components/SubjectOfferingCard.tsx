@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, BookOpen, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, BookOpen, Trash2, Pencil } from 'lucide-react';
 import type { ApiSubjectGroup } from '../types';
 import { GroupDetailsView } from './GroupDetailsView';
 import { useSubjects } from '../context/SubjectContext';
@@ -10,6 +10,7 @@ interface SubjectOfferingCardProps {
     subjectId: number | string;
     groups: ApiSubjectGroup[];
     isCustom?: boolean;
+    onEdit?: () => void;
 }
 
 export const SubjectOfferingCard: React.FC<SubjectOfferingCardProps> = ({
@@ -17,6 +18,7 @@ export const SubjectOfferingCard: React.FC<SubjectOfferingCardProps> = ({
     subjectId,
     groups,
     isCustom = false,
+    onEdit,
 }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -24,11 +26,12 @@ export const SubjectOfferingCard: React.FC<SubjectOfferingCardProps> = ({
 
     const handleDelete = (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (isCustom) {
-            setShowDeleteConfirm(true);
-        } else {
-            setShowDeleteConfirm(true);
-        }
+        setShowDeleteConfirm(true);
+    };
+
+    const handleEdit = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onEdit?.();
     };
 
     const confirmRemoval = () => {
@@ -74,13 +77,24 @@ export const SubjectOfferingCard: React.FC<SubjectOfferingCardProps> = ({
                         </div>
                     </button>
 
-                    <button
-                        onClick={handleDelete}
-                        className="p-4 mr-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
-                        title="Eliminar materia"
-                    >
-                        <Trash2 size={20} />
-                    </button>
+                    <div className="flex items-center gap-1">
+                        {isCustom && (
+                            <button
+                                onClick={handleEdit}
+                                className="p-4 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-colors"
+                                title="Editar materia"
+                            >
+                                <Pencil size={20} />
+                            </button>
+                        )}
+                        <button
+                            onClick={handleDelete}
+                            className="p-4 mr-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                            title="Eliminar materia"
+                        >
+                            <Trash2 size={20} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Expanded Content */}

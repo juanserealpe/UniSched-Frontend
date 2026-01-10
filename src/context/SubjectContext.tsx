@@ -9,6 +9,7 @@ interface SubjectContextType {
     customSubjects: SubjectGroup[];
     toggleSubject: (id: number) => void;
     addCustomSubject: (subject: SubjectGroup) => void;
+    updateCustomSubject: (oldName: string, newName: string, groups: { groupCode: string, professors: string, schedules: any[] }[]) => void;
     removeCustomSubject: (id: string | number) => void; // custom IDs are strings uuid, official are numbers
     clearAllSubjects: () => void;
     // Helper to get full subject objects
@@ -90,6 +91,22 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
         setCustomSubjects(prev => [...prev, subject]);
     }, []);
 
+    const updateCustomSubject = useCallback((oldName: string, newName: string, groups: { groupCode: string, professors: string, schedules: any[] }[]) => {
+        setCustomSubjects(prev => {
+            const preservedOtherSubjects = prev.filter(s => s.subjectName !== oldName);
+            const newGroups = groups.map(group => ({
+                id: `custom-${crypto.randomUUID()}`,
+                subjectId: -1,
+                subjectName: newName,
+                groupCode: group.groupCode,
+                professors: group.professors || 'Sin especificar',
+                schedules: group.schedules,
+                isCustom: true
+            }));
+            return [...preservedOtherSubjects, ...newGroups];
+        });
+    }, []);
+
     const removeCustomSubject = useCallback((id: string | number) => {
         setCustomSubjects(prev => prev.filter(s => s.id !== id));
     }, []);
@@ -113,6 +130,7 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
         customSubjects,
         toggleSubject,
         addCustomSubject,
+        updateCustomSubject,
         removeCustomSubject,
         clearAllSubjects,
         selectedSubjectsList,

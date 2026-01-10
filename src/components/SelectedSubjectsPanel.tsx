@@ -1,12 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { useSubjects } from '../context/SubjectContext';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Pencil } from 'lucide-react';
+import { AddCustomSubjectModal } from './AddCustomSubjectModal';
 import { Modal } from './Modal';
 
 export const SelectedSubjectsPanel: React.FC = () => {
     const { selectedSubjectsList, toggleSubject, removeCustomSubject, clearAllSubjects, customSubjects } = useSubjects();
     const [confirmDelete, setConfirmDelete] = useState<{ id: string | number; name: string; isCustom: boolean; groupCount?: number } | null>(null);
     const [isClearAllModalOpen, setIsClearAllModalOpen] = useState(false);
+    const [editingSubject, setEditingSubject] = useState<{ name: string; groups: any[] } | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     // Group custom subjects by name
     const groupedSubjects = useMemo(() => {
@@ -30,6 +33,23 @@ export const SelectedSubjectsPanel: React.FC = () => {
 
         return [...official, ...customAsEntries];
     }, [selectedSubjectsList, customSubjects]);
+
+    const handleEditClick = (item: any) => {
+        // Find all groups for this custom subject
+        const groups = customSubjects
+            .filter(cs => cs.subjectName === (item.name || item.subjectName))
+            .map(g => ({
+                groupCode: g.groupCode,
+                professors: g.professors,
+                schedules: g.schedules
+            }));
+
+        setEditingSubject({
+            name: item.name || item.subjectName,
+            groups: groups
+        });
+        setIsEditModalOpen(true);
+    };
 
     const handleDeleteClick = (item: any) => {
         setConfirmDelete({
@@ -105,17 +125,37 @@ export const SelectedSubjectsPanel: React.FC = () => {
                                 </div>
                             </div>
 
-                            <button
-                                onClick={() => handleDeleteClick(item)}
-                                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                title="Eliminar materia"
-                            >
-                                <Trash2 size={16} />
-                            </button>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                {item.isCustom && (
+                                    <button
+                                        onClick={() => handleEditClick(item)}
+                                        className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                        title="Editar materia"
+                                    >
+                                        <Pencil size={16} />
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => handleDeleteClick(item)}
+                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                    title="Eliminar materia"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
             </div>
+
+            <AddCustomSubjectModal
+                isOpen={isEditModalOpen}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    setEditingSubject(null);
+                }}
+                initialData={editingSubject}
+            />
 
             <Modal
                 isOpen={!!confirmDelete}

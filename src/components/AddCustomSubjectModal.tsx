@@ -7,6 +7,7 @@ import { useSubjects } from '../context/SubjectContext';
 interface AddCustomSubjectModalProps {
     isOpen: boolean;
     onClose: () => void;
+    initialData?: { name: string; groups: CustomGroup[] } | null;
 }
 
 interface CustomGroup {
@@ -17,9 +18,7 @@ interface CustomGroup {
 
 const DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'] as const;
 
-export const AddCustomSubjectModal: React.FC<AddCustomSubjectModalProps> = ({ isOpen, onClose }) => {
-    const { addCustomSubject } = useSubjects();
-
+export const AddCustomSubjectModal: React.FC<AddCustomSubjectModalProps> = ({ isOpen, onClose, initialData }) => {
     const [name, setName] = useState('');
     const [groups, setGroups] = useState<CustomGroup[]>([]);
 
@@ -31,6 +30,18 @@ export const AddCustomSubjectModal: React.FC<AddCustomSubjectModalProps> = ({ is
     const [endTime, setEndTime] = useState('16:00');
     const [currentSchedules, setCurrentSchedules] = useState<Schedule[]>([]);
     const [isEditingGroup, setIsEditingGroup] = useState(false);
+    const [editingGroupIndex, setEditingGroupIndex] = useState<number | null>(null);
+
+    const { updateCustomSubject, addCustomSubject } = useSubjects();
+
+    React.useEffect(() => {
+        if (isOpen && initialData) {
+            setName(initialData.name);
+            setGroups(initialData.groups);
+        } else if (isOpen && !initialData) {
+            resetForm();
+        }
+    }, [isOpen, initialData]);
 
     const [errors, setErrors] = useState<string[]>([]);
 
@@ -41,6 +52,7 @@ export const AddCustomSubjectModal: React.FC<AddCustomSubjectModalProps> = ({ is
         setCurrentProfessors('');
         setCurrentSchedules([]);
         setIsEditingGroup(false);
+        setEditingGroupIndex(null);
         setErrors([]);
         setStartTime('14:00');
         setEndTime('16:00');
@@ -83,6 +95,12 @@ export const AddCustomSubjectModal: React.FC<AddCustomSubjectModalProps> = ({ is
         if (currentGroupCode.length > 5) newErrors.push('El código del grupo no debe superar 5 caracteres');
         if (currentSchedules.length === 0) newErrors.push('Debes agregar al menos un horario al grupo');
 
+        // Check if group code is duplicate
+        const isCodeDuplicate = groups.some((g, idx) =>
+            g.groupCode.toLowerCase() === currentGroupCode.trim().toLowerCase() && idx !== editingGroupIndex
+        );
+        if (isCodeDuplicate) newErrors.push(`El grupo "${currentGroupCode.trim()}" ya existe en esta materia`);
+
         if (newErrors.length > 0) {
             setErrors(newErrors);
             return;
@@ -94,13 +112,28 @@ export const AddCustomSubjectModal: React.FC<AddCustomSubjectModalProps> = ({ is
             schedules: [...currentSchedules]
         };
 
-        setGroups(prev => [...prev, newGroup]);
+        if (editingGroupIndex !== null) {
+            setGroups(prev => prev.map((g, i) => i === editingGroupIndex ? newGroup : g));
+        } else {
+            setGroups(prev => [...prev, newGroup]);
+        }
 
         // Reset group form
         setCurrentGroupCode('');
         setCurrentProfessors('');
         setCurrentSchedules([]);
         setIsEditingGroup(false);
+        setEditingGroupIndex(null);
+        setErrors([]);
+    };
+
+    const editGroup = (index: number) => {
+        const group = groups[index];
+        setCurrentGroupCode(group.groupCode);
+        setCurrentProfessors(group.professors);
+        setCurrentSchedules(group.schedules);
+        setEditingGroupIndex(index);
+        setIsEditingGroup(true);
         setErrors([]);
     };
 
@@ -118,19 +151,25 @@ export const AddCustomSubjectModal: React.FC<AddCustomSubjectModalProps> = ({ is
             return;
         }
 
-        // Crear la materia custom con todos sus grupos
-        groups.forEach((group, index) => {
-            const customSubject = {
-                id: `custom-${crypto.randomUUID()}`,
-                subjectId: -1,
-                subjectName: name,
-                groupCode: group.groupCode,
-                professors: group.professors || 'Sin especificar',
-                schedules: group.schedules,
-                isCustom: true
-            };
-            addCustomSubject(customSubject);
-        });
+        if (initialData) {
+            // Edit mode
+            updateCustomSubject(initialData.name, name.trim(), groups);
+        } else {
+            // New mode
+            // Crear la materia custom con todos sus grupos
+            groups.forEach((group, index) => {
+                const customSubject = {
+                    id: `custom-${crypto.randomUUID()}`,
+                    subjectId: -1,
+                    subjectName: name.trim(),
+                    groupCode: group.groupCode,
+                    professors: group.professors || 'Sin especificar',
+                    schedules: group.schedules,
+                    isCustom: true
+                };
+                addCustomSubject(customSubject);
+            });
+        }
 
         handleClose();
     };
@@ -139,7 +178,7 @@ export const AddCustomSubjectModal: React.FC<AddCustomSubjectModalProps> = ({ is
         <Modal
             isOpen={isOpen}
             onClose={handleClose}
-            title="Agregar Materia Personalizada"
+            title={initialData ? "Editar Materia Personalizada" : "Agregar Materia Personalizada"}
             footer={
                 <>
                     <button
@@ -213,12 +252,22 @@ export const AddCustomSubjectModal: React.FC<AddCustomSubjectModalProps> = ({ is
                                             ))}
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => removeGroup(idx)}
-                                        className="p-1 text-slate-400 hover:text-red-500 transition-colors"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+                                    <div className="flex items-center gap-1">
+                                        <button
+                                            onClick={() => editGroup(idx)}
+                                            className="p-1 text-slate-400 hover:text-blue-500 transition-colors"
+                                            title="Editar grupo"
+                                        >
+                                            <Clock size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => removeGroup(idx)}
+                                            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                                            title="Eliminar grupo"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -237,7 +286,9 @@ export const AddCustomSubjectModal: React.FC<AddCustomSubjectModalProps> = ({ is
                 ) : (
                     <div className="bg-slate-50 p-4 rounded-xl border-2 border-blue-200 space-y-3">
                         <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-sm font-semibold text-slate-700">Nuevo Grupo</h4>
+                            <h4 className="text-sm font-semibold text-slate-700">
+                                {editingGroupIndex !== null ? 'Editar Grupo' : 'Nuevo Grupo'}
+                            </h4>
                             <button
                                 onClick={() => {
                                     setIsEditingGroup(false);
@@ -351,7 +402,7 @@ export const AddCustomSubjectModal: React.FC<AddCustomSubjectModalProps> = ({ is
                             onClick={saveCurrentGroup}
                             className="w-full py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-sm"
                         >
-                            Guardar Grupo
+                            {editingGroupIndex !== null ? 'Actualizar Grupo' : 'Guardar Grupo'}
                         </button>
                     </div>
                 )}
