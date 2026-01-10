@@ -31,6 +31,18 @@ export interface SubjectGroup {
     isCustom: boolean;
 }
 
+// API Request types
+export interface CustomGroupRequest {
+    groupCode: string;
+    professors: string | null;
+    schedules: Schedule[];
+}
+
+export interface CustomSubjectRequest {
+    name: string;
+    groups: CustomGroupRequest[];
+}
+
 // API Response types
 export interface ValidationResponse {
     isValid: boolean;

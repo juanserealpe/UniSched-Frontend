@@ -20,19 +20,25 @@ export const SubjectOfferingCard: React.FC<SubjectOfferingCardProps> = ({
 }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const { toggleSubject, removeCustomSubject } = useSubjects();
+    const { toggleSubject, removeCustomSubject, customSubjects } = useSubjects();
 
     const handleDelete = (e: React.MouseEvent) => {
-        e.stopPropagation(); // Prevent card toggle
+        e.stopPropagation();
         if (isCustom) {
-            removeCustomSubject(subjectId);
+            setShowDeleteConfirm(true);
         } else {
             setShowDeleteConfirm(true);
         }
     };
 
     const confirmRemoval = () => {
-        toggleSubject(subjectId as number);
+        if (isCustom) {
+            // Remove all groups of this custom subject
+            const groupsToRemove = customSubjects.filter(cs => cs.subjectName === subjectName);
+            groupsToRemove.forEach(g => removeCustomSubject(g.id));
+        } else {
+            toggleSubject(subjectId as number);
+        }
         setShowDeleteConfirm(false);
     };
 
@@ -83,11 +89,6 @@ export const SubjectOfferingCard: React.FC<SubjectOfferingCardProps> = ({
                         {groups.length === 0 ? (
                             <div className="text-center py-8 text-slate-500">
                                 <p className="text-sm">No hay grupos disponibles para esta materia.</p>
-                                {isCustom && (
-                                    <p className="text-xs mt-2 text-slate-400">
-                                        Las materias personalizadas no tienen grupos asignados.
-                                    </p>
-                                )}
                             </div>
                         ) : (
                             <div className="space-y-3">
@@ -129,9 +130,16 @@ export const SubjectOfferingCard: React.FC<SubjectOfferingCardProps> = ({
                 <p className="text-slate-600">
                     ¿Estás seguro de que deseas eliminar <strong>{subjectName}</strong> de tu selección?
                 </p>
-                <p className="text-slate-500 text-sm mt-2">
-                    Esto podría desbloquear materias que dependen de ella.
-                </p>
+                {isCustom && groups.length > 1 && (
+                    <p className="text-slate-500 text-sm mt-2">
+                        Se eliminarán todos los {groups.length} grupos de esta materia.
+                    </p>
+                )}
+                {!isCustom && (
+                    <p className="text-slate-500 text-sm mt-2">
+                        Esto podría desbloquear materias que dependen de ella.
+                    </p>
+                )}
             </Modal>
         </>
     );

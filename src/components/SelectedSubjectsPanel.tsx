@@ -1,18 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSubjects } from '../context/SubjectContext';
 import { Trash2 } from 'lucide-react';
 import { Modal } from './Modal';
 
 export const SelectedSubjectsPanel: React.FC = () => {
-    const { selectedSubjectsList, toggleSubject, removeCustomSubject, clearAllSubjects } = useSubjects();
-    const [confirmDelete, setConfirmDelete] = useState<{ id: string | number; name: string; isCustom: boolean } | null>(null);
+    const { selectedSubjectsList, toggleSubject, removeCustomSubject, clearAllSubjects, customSubjects } = useSubjects();
+    const [confirmDelete, setConfirmDelete] = useState<{ id: string | number; name: string; isCustom: boolean; groupCount?: number } | null>(null);
     const [isClearAllModalOpen, setIsClearAllModalOpen] = useState(false);
+
+    // Group custom subjects by name
+    const groupedSubjects = useMemo(() => {
+        const official = selectedSubjectsList.filter((s: any) => !s.isCustom);
+
+        // Group custom subjects by name
+        const customGrouped = new Map<string, typeof customSubjects>();
+        customSubjects.forEach(cs => {
+            if (!customGrouped.has(cs.subjectName)) {
+                customGrouped.set(cs.subjectName, []);
+            }
+            customGrouped.get(cs.subjectName)!.push(cs);
+        });
+
+        const customAsEntries = Array.from(customGrouped.entries()).map(([name, groups]) => ({
+            id: groups[0].id,
+            name: name,
+            isCustom: true,
+            groupCount: groups.length
+        }));
+
+        return [...official, ...customAsEntries];
+    }, [selectedSubjectsList, customSubjects]);
 
     const handleDeleteClick = (item: any) => {
         setConfirmDelete({
             id: item.id,
             name: item.name || item.subjectName,
-            isCustom: !!item.isCustom
+            isCustom: !!item.isCustom,
+            groupCount: item.groupCount
         });
     };
 
@@ -20,7 +44,9 @@ export const SelectedSubjectsPanel: React.FC = () => {
         if (!confirmDelete) return;
 
         if (confirmDelete.isCustom) {
-            removeCustomSubject(confirmDelete.id);
+            // Remove all groups of this custom subject by name
+            const groupsToRemove = customSubjects.filter(cs => cs.subjectName === confirmDelete.name);
+            groupsToRemove.forEach(g => removeCustomSubject(g.id));
         } else {
             toggleSubject(confirmDelete.id as number);
         }
@@ -32,7 +58,7 @@ export const SelectedSubjectsPanel: React.FC = () => {
         setIsClearAllModalOpen(false);
     };
 
-    const totalSubjects = selectedSubjectsList.length;
+    const totalSubjects = groupedSubjects.length;
 
     return (
         <>
@@ -53,23 +79,30 @@ export const SelectedSubjectsPanel: React.FC = () => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                    {selectedSubjectsList.length === 0 && (
+                    {groupedSubjects.length === 0 && (
                         <div className="p-4 text-center text-slate-400 text-sm">
                             No has seleccionado ninguna materia.
                         </div>
                     )}
 
-                    {selectedSubjectsList.map((item: any) => (
+                    {groupedSubjects.map((item: any) => (
                         <div key={item.id} className="group flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-transparent hover:border-slate-200">
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                                 <div className="font-medium text-sm truncate text-slate-700">
                                     {item.name || item.subjectName}
                                 </div>
-                                {item.isCustom && (
-                                    <span className="inline-block mt-1 px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold uppercase rounded">
-                                        Custom
-                                    </span>
-                                )}
+                                <div className="flex items-center gap-2 mt-1">
+                                    {item.isCustom && (
+                                        <span className="inline-block px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold uppercase rounded">
+                                            Custom
+                                        </span>
+                                    )}
+                                    {item.groupCount && item.groupCount > 1 && (
+                                        <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded">
+                                            {item.groupCount} grupos
+                                        </span>
+                                    )}
+                                </div>
                             </div>
 
                             <button
@@ -108,6 +141,11 @@ export const SelectedSubjectsPanel: React.FC = () => {
                 <p className="text-slate-600">
                     ¿Estás seguro de que deseas eliminar <strong>{confirmDelete?.name}</strong>?
                 </p>
+                {confirmDelete?.isCustom && confirmDelete.groupCount && confirmDelete.groupCount > 1 && (
+                    <p className="text-slate-500 text-sm mt-2">
+                        Se eliminarán los {confirmDelete.groupCount} grupos de esta materia.
+                    </p>
+                )}
                 {!confirmDelete?.isCustom && (
                     <p className="text-slate-500 text-sm mt-2">
                         Esto podría desbloquear materias que dependen de ella.

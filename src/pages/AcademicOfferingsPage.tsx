@@ -4,7 +4,7 @@ import { useSubjects } from '../context/SubjectContext';
 import { SubjectOfferingCard } from '../components/SubjectOfferingCard';
 import { ArrowLeft, GraduationCap, Users, Calendar } from 'lucide-react';
 import { Header } from '../components/Header';
-import type { ApiSubjectGroup } from '../types';
+import type { ApiSubjectGroup, CustomSubjectRequest } from '../types';
 
 export const AcademicOfferingsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -20,7 +20,6 @@ export const AcademicOfferingsPage: React.FC = () => {
     } = useSubjects();
 
     if (!validationData) {
-        // If no validation data, redirect back to selection
         navigate('/');
         return null;
     }
@@ -46,19 +45,27 @@ export const AcademicOfferingsPage: React.FC = () => {
         }
     });
 
-    // Add custom subjects
+    // Add custom subjects (group them by subject name)
+    const customSubjectsMap = new Map<string, ApiSubjectGroup[]>();
     customSubjects.forEach((customSubject) => {
-        allSubjectsWithGroups.push({
-            subjectId: customSubject.id,
+        if (!customSubjectsMap.has(customSubject.subjectName)) {
+            customSubjectsMap.set(customSubject.subjectName, []);
+        }
+        customSubjectsMap.get(customSubject.subjectName)!.push({
+            id: customSubject.id as any,
+            subjectId: customSubject.subjectId,
             subjectName: customSubject.subjectName,
-            groups: [{
-                id: customSubject.id as any,
-                subjectId: customSubject.subjectId,
-                subjectName: customSubject.subjectName,
-                groupCode: customSubject.groupCode || 'GRUPO',
-                professors: customSubject.professors || 'Personalizado',
-                schedules: customSubject.schedules
-            }],
+            groupCode: customSubject.groupCode,
+            professors: customSubject.professors,
+            schedules: customSubject.schedules
+        });
+    });
+
+    customSubjectsMap.forEach((groups, subjectName) => {
+        allSubjectsWithGroups.push({
+            subjectId: groups[0].id,
+            subjectName: subjectName,
+            groups: groups,
             isCustom: true,
         });
     });
@@ -71,35 +78,47 @@ export const AcademicOfferingsPage: React.FC = () => {
         setIsLoadingSchedules(true);
         setScheduleError(null);
 
-        // Filtrar solo IDs de materias oficiales (números positivos)
+        // Filter official IDs
         const officialIds = selectedSubjectsList
             .filter((s: any) => !s.isCustom && typeof s.id === 'number')
             .map((s) => s.id);
 
-        // Formatear tiempo para asegurar formato HH:mm:ss
+        // Format time to ensure HH:mm:ss format
         const formatTime = (time: string) => {
-            // Si ya tiene formato HH:mm:ss, devolverlo
             if (time.split(':').length === 3) return time;
-            // Si tiene formato HH:mm, agregar :00
             if (time.split(':').length === 2) return `${time}:00`;
-            // Fallback
             return time;
         };
 
-        // Construir payload según el DTO del backend
-        const payload = {
-            // Array de IDs de materias oficiales (no puede estar vacío si no hay custom)
-            subjectIds: officialIds.length > 0 ? officialIds : [],
-            // Array de materias custom (puede ser null/undefined si no hay)
-            customSubjects: customSubjects.length > 0 ? customSubjects.map(cs => ({
-                name: cs.subjectName,
-                groupCode: cs.groupCode || null, // null si está vacío
-                schedules: cs.schedules.map(sch => ({
+        // Group custom subjects by name to construct the new payload
+        const customSubjectsGroupedByName = new Map<string, typeof customSubjects>();
+        customSubjects.forEach(cs => {
+            if (!customSubjectsGroupedByName.has(cs.subjectName)) {
+                customSubjectsGroupedByName.set(cs.subjectName, []);
+            }
+            customSubjectsGroupedByName.get(cs.subjectName)!.push(cs);
+        });
+
+        // Build custom subjects array according to new DTO structure
+        const customSubjectsPayload: CustomSubjectRequest[] = Array.from(
+            customSubjectsGroupedByName.entries()
+        ).map(([name, groups]) => ({
+            name: name,
+            groups: groups.map(g => ({
+                groupCode: g.groupCode,
+                professors: g.professors || null,
+                schedules: g.schedules.map(sch => ({
                     dayOfWeek: sch.dayOfWeek,
                     startTime: formatTime(sch.startTime),
                     endTime: formatTime(sch.endTime)
                 }))
-            })) : null
+            }))
+        }));
+
+        // Build payload
+        const payload = {
+            subjectIds: officialIds.length > 0 ? officialIds : [],
+            customSubjects: customSubjectsPayload.length > 0 ? customSubjectsPayload : null
         };
 
         console.log('Payload siendo enviado:', JSON.stringify(payload, null, 2));
@@ -132,14 +151,12 @@ export const AcademicOfferingsPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900 pb-24">
-            {/* Header */}
             <Header
                 subtitle="Oferta Académica"
                 showBackButton
                 onBackButtonClick={() => navigate('/')}
             />
 
-            {/* Main Content */}
             <div className="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-6">
                 {/* Statistics Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
