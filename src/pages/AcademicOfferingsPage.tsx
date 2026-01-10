@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSubjects } from '../context/SubjectContext';
 import { SubjectOfferingCard } from '../components/SubjectOfferingCard';
 import { ArrowLeft, GraduationCap, Users, Calendar } from 'lucide-react';
+import { Header } from '../components/Header';
 import type { ApiSubjectGroup } from '../types';
 
 export const AcademicOfferingsPage: React.FC = () => {
@@ -132,26 +133,11 @@ export const AcademicOfferingsPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900 pb-24">
             {/* Header */}
-            <header className="bg-slate-900 text-white p-4 shadow-md sticky top-0 z-20">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => navigate('/')}
-                            className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
-                            title="Volver a selección"
-                        >
-                            <ArrowLeft size={24} />
-                        </button>
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-lg">
-                                U
-                            </div>
-                            <h1 className="text-xl font-bold tracking-tight">UNISCHED</h1>
-                        </div>
-                    </div>
-                    <div className="text-sm text-slate-400">Oferta Académica</div>
-                </div>
-            </header>
+            <Header
+                subtitle="Oferta Académica"
+                showBackButton
+                onBackButtonClick={() => navigate('/')}
+            />
 
             {/* Main Content */}
             <div className="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-6">

@@ -7,6 +7,7 @@ import { AddCustomSubjectModal } from './components/AddCustomSubjectModal';
 import { AcademicOfferingsPage } from './pages/AcademicOfferingsPage';
 import { GeneratedSchedulesPage } from './pages/GeneratedSchedulesPage';
 import { Plus, ArrowRight } from 'lucide-react';
+import { Header } from './components/Header';
 import type { ValidationResponse } from './types';
 
 const MainLayout = () => {
@@ -56,17 +57,7 @@ const MainLayout = () => {
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900">
       {/* Header */}
-      <header className="bg-slate-900 text-white p-4 shadow-md sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-lg">
-              U
-            </div>
-            <h1 className="text-xl font-bold tracking-tight">UNISCHED</h1>
-          </div>
-          <div className="text-sm text-slate-400">Sistema de Selección de Materias</div>
-        </div>
-      </header>
+      <Header subtitle="Sistema de Selección de Materias" />
 
       {/* Main Content */}
       <div className="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
