@@ -275,7 +275,7 @@ export const studyPlan: Subject[] = [
         id: 36,
         name: "Ingeniería de Software II",
         semester: 6,
-        unlocks: [],
+        unlocks: [45],
         prerequisite: 29,
         mandatoryWith: 37,
     },
@@ -333,7 +333,7 @@ export const studyPlan: Subject[] = [
         prerequisite: 34,
     },
     {
-        id:44,
+        id: 44,
         name: "Lab. Sistemas Distribuidos",
         semester: 7,
         unlocks: [],
@@ -344,8 +344,8 @@ export const studyPlan: Subject[] = [
         name: "Ingeniería de Software III",
         semester: 7,
         unlocks: [],
-        prerequisite: 29,
-        mandatoryWith: 37,
+        prerequisite: 36,
+        mandatoryWith: 46,
     },
     {
         id: 46,

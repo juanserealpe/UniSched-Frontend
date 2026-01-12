@@ -37,7 +37,12 @@ export function calculateSubjectStates(studyPlan: Subject[], selectedIds: number
 
         // Effective IDs only includes the selected subject now.
         // We no longer block descendants/ancestors of the partner automatically.
+        // UPDATE: User requested that selecting a Lab DOES block the Theory's parents/children.
+        // So we MUST include the mandatoryWith partner here.
         const effectiveIds = [selectedId];
+        if (subject.mandatoryWith) {
+            effectiveIds.push(subject.mandatoryWith);
+        }
 
         effectiveIds.forEach(id => {
             // Block all descendants (children, grandchildren, etc.)
@@ -49,6 +54,21 @@ export function calculateSubjectStates(studyPlan: Subject[], selectedIds: number
             ancestors.forEach(aId => blockedIds.add(aId));
         });
     });
+
+    // START FIX: Propagate blocking to mandatory partners
+    // If a subject is blocked (e.g. it is a descendant of a selected subject),
+    // its mandatory partner (e.g. Lab) should also be blocked.
+    // We iterate over the initial blockedIds to find partners to block.
+    // Use a temp array to avoid modifying the Set while iterating if the engine doesn't support it,
+    // though Set iteration is usually safe for additions in newer JS, a separate loop is clearer.
+    const initialBlockedIds = Array.from(blockedIds);
+    initialBlockedIds.forEach(blockedId => {
+        const subject = studyPlan.find(s => s.id === blockedId);
+        if (subject && subject.mandatoryWith) {
+            blockedIds.add(subject.mandatoryWith);
+        }
+    });
+    // END FIX
 
     return studyPlan.map(subject => {
         let result: SubjectWithState;
