@@ -17,7 +17,9 @@ export const AcademicOfferingsPage: React.FC = () => {
         setScheduleError,
         isLoadingSchedules,
         selectedSubjectsList,
-        selectedIds
+        selectedIds,
+        excludedGroupIds,
+        isGroupExcluded
     } = useSubjects();
 
     const [editingSubject, setEditingSubject] = React.useState<{ name: string; groups: any[] } | null>(null);
@@ -88,6 +90,31 @@ export const AcademicOfferingsPage: React.FC = () => {
             return time;
         };
 
+        // --- VALIDATION START ---
+        // Check official subjects
+        const officialViolation = allSubjectsWithGroups
+            .filter(s => !s.isCustom)
+            .find(s => {
+                const excludedCount = s.groups.filter(g => isGroupExcluded(g.id, false)).length;
+                return s.groups.length - excludedCount === 0;
+            });
+
+        // Check custom subjects
+        const customViolation = allSubjectsWithGroups
+            .filter(s => s.isCustom)
+            .find(s => {
+                const excludedCount = s.groups.filter(g => isGroupExcluded(g.id, true, s.subjectName, g.groupCode)).length;
+                return s.groups.length - excludedCount === 0;
+            });
+
+        if (officialViolation || customViolation) {
+            const violationName = officialViolation ? officialViolation.subjectName : customViolation?.subjectName;
+            alert(`⚠️ Debes seleccionar al menos un grupo para la materia "${violationName}".`);
+            setIsLoadingSchedules(false);
+            return;
+        }
+        // --- VALIDATION END ---
+
         const customSubjectsGroupedByName = new Map<string, typeof customSubjects>();
         customSubjects.forEach(cs => {
             if (!customSubjectsGroupedByName.has(cs.subjectName)) {
@@ -98,21 +125,27 @@ export const AcademicOfferingsPage: React.FC = () => {
 
         const customSubjectsPayload: CustomSubjectRequest[] = Array.from(
             customSubjectsGroupedByName.entries()
-        ).map(([name, groups]) => ({
-            name: name,
-            groups: groups.map(g => ({
-                groupCode: g.groupCode,
-                professors: g.professors || null,
-                schedules: g.schedules.map(sch => ({
-                    dayOfWeek: sch.dayOfWeek,
-                    startTime: formatTime(sch.startTime),
-                    endTime: formatTime(sch.endTime)
+        ).map(([name, groups]) => {
+            // FILTER OUT EXCLUDED CUSTOM GROUPS
+            const activeGroups = groups.filter(g => !isGroupExcluded(g.id, true, name, g.groupCode));
+
+            return {
+                name: name,
+                groups: activeGroups.map(g => ({
+                    groupCode: g.groupCode,
+                    professors: g.professors || null,
+                    schedules: g.schedules.map(sch => ({
+                        dayOfWeek: sch.dayOfWeek,
+                        startTime: formatTime(sch.startTime),
+                        endTime: formatTime(sch.endTime)
+                    }))
                 }))
-            }))
-        }));
+            };
+        }).filter(subject => subject.groups.length > 0); // Should be handled by validation above, but safe guard
 
         const payload = {
             subjectIds: officialIds.length > 0 ? officialIds : [],
+            excludedGroupIds: Array.from(excludedGroupIds), // Send official excluded IDs
             customSubjects: customSubjectsPayload.length > 0 ? customSubjectsPayload : null
         };
 

@@ -24,6 +24,11 @@ interface SubjectContextType {
     setIsLoadingSchedules: (loading: boolean) => void;
     scheduleError: string | null;
     setScheduleError: (error: string | null) => void;
+    // Group Exclusion
+    excludedGroupIds: Set<number>;
+    excludedCustomGroups: Map<string, Set<string>>;
+    toggleGroupExclusion: (groupId: number | string, isCustom: boolean, subjectName?: string, groupCode?: string) => void;
+    isGroupExcluded: (groupId: number | string, isCustom: boolean, subjectName?: string, groupCode?: string) => boolean;
 }
 
 const SubjectContext = createContext<SubjectContextType | undefined>(undefined);
@@ -44,6 +49,55 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
     const [generatedSchedules, setGeneratedSchedules] = useState<GeneratedSchedule[]>([]);
     const [isLoadingSchedules, setIsLoadingSchedules] = useState(false);
     const [scheduleError, setScheduleError] = useState<string | null>(null);
+
+    // Exclusion State
+    const [excludedGroupIds, setExcludedGroupIds] = useState<Set<number>>(new Set());
+    const [excludedCustomGroups, setExcludedCustomGroups] = useState<Map<string, Set<string>>>(new Map());
+
+    const toggleGroupExclusion = useCallback((groupId: number | string, isCustom: boolean, subjectName?: string, groupCode?: string) => {
+        if (isCustom) {
+            if (!subjectName || !groupCode) return;
+            setExcludedCustomGroups(prev => {
+                const newMap = new Map(prev);
+                const currentSet = newMap.get(subjectName) || new Set();
+                const newSet = new Set(currentSet);
+
+                if (newSet.has(groupCode)) {
+                    newSet.delete(groupCode);
+                } else {
+                    newSet.add(groupCode);
+                }
+
+                if (newSet.size === 0) {
+                    newMap.delete(subjectName);
+                } else {
+                    newMap.set(subjectName, newSet);
+                }
+                return newMap;
+            });
+        } else {
+            // Official subject
+            const id = groupId as number;
+            setExcludedGroupIds(prev => {
+                const newSet = new Set(prev);
+                if (newSet.has(id)) {
+                    newSet.delete(id);
+                } else {
+                    newSet.add(id);
+                }
+                return newSet;
+            });
+        }
+    }, []);
+
+    const isGroupExcluded = useCallback((groupId: number | string, isCustom: boolean, subjectName?: string, groupCode?: string): boolean => {
+        if (isCustom) {
+            if (!subjectName || !groupCode) return false;
+            return excludedCustomGroups.get(subjectName)?.has(groupCode) || false;
+        } else {
+            return excludedGroupIds.has(groupId as number);
+        }
+    }, [excludedGroupIds, excludedCustomGroups]);
 
     // Persist to localStorage
     React.useEffect(() => {
@@ -116,6 +170,8 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
         setCustomSubjects([]);
         setValidationData(null);
         setGeneratedSchedules([]);
+        setExcludedGroupIds(new Set());
+        setExcludedCustomGroups(new Map());
     }, []);
 
     // Combined list for the side panel
@@ -142,6 +198,10 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
         setIsLoadingSchedules,
         scheduleError,
         setScheduleError,
+        excludedGroupIds,
+        excludedCustomGroups,
+        toggleGroupExclusion,
+        isGroupExcluded,
     };
 
     return (
