@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2, Pencil, Eye, EyeOff, AlertTriangle } from 'lucide-react';
+import { Trash2, Pencil, ChevronDown, Check } from 'lucide-react';
 import type { ApiSubjectGroup } from '../types';
 import { useSubjects } from '../context/SubjectContext';
 import { Modal } from './Modal';
@@ -20,6 +20,7 @@ export const SubjectOfferingCard: React.FC<SubjectOfferingCardProps> = ({
     onEdit,
 }) => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
     const { toggleSubject, removeCustomSubject, customSubjects, toggleGroupExclusion, isGroupExcluded } = useSubjects();
 
     const handleDelete = (e: React.MouseEvent) => {
@@ -42,7 +43,7 @@ export const SubjectOfferingCard: React.FC<SubjectOfferingCardProps> = ({
         setShowDeleteConfirm(false);
     };
 
-    // calculate stats
+    // Calculate stats
     const totalGroups = groups.length;
     const excludedCount = groups.filter(g =>
         isGroupExcluded(g.id, isCustom, subjectName, g.groupCode)
@@ -50,31 +51,19 @@ export const SubjectOfferingCard: React.FC<SubjectOfferingCardProps> = ({
     const availableCount = totalGroups - excludedCount;
     const isAtRisk = availableCount === 0;
 
-    const handleToggleGroup = (group: ApiSubjectGroup) => {
-        // Optional: Prevent excluding the last one? 
-        // Logic: The prompt says "Último disponible: checkbox deshabilitado" OR "Si quedan 0 grupos -> alerta"
-        // Let's go with the alert approach for better UX (allow deselecting all but show warning),
-        // OR strictly follow the "Last Available: checkbox disabled" rule. 
-        // Let's implement strict disabling for the last one if it's currently active.
-
-        const isExcluded = isGroupExcluded(group.id, isCustom, subjectName, group.groupCode);
-
-        if (!isExcluded && availableCount <= 1) {
-            // Trying to exclude the last one?
-            // Actually, users might want to re-shuffle. 
-            // Better to allow it but show the big warning as requested "Si quedan 0 grupos -> alerta roja".
-            // So I will NOT block it here, but I will show the visual states requested.
-        }
-
+    const handleToggleGroup = (group: ApiSubjectGroup, e?: React.MouseEvent) => {
+        e?.stopPropagation();
         toggleGroupExclusion(group.id, isCustom, subjectName, group.groupCode);
     };
 
     return (
         <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 h-full flex flex-col group">
-            <div className="p-6 sm:p-8 flex-1">
-                <div className="flex items-start justify-between mb-8 gap-4">
+            {/* Main Header Area */}
+            <div className="p-5 flex flex-col gap-4">
+                <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
+                        {/* Tags */}
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
                             {isCustom ? (
                                 <div className="px-2 py-0.5 bg-purple-50 text-purple-600 text-[10px] font-bold uppercase tracking-wider rounded-md border border-purple-100 flex items-center gap-1">
                                     <div className="w-1 h-1 bg-purple-400 rounded-full" />
@@ -86,112 +75,107 @@ export const SubjectOfferingCard: React.FC<SubjectOfferingCardProps> = ({
                                     Oficial
                                 </div>
                             )}
-                            <div className="px-2 py-0.5 bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider rounded-md border border-slate-100 italic">
+                            <div className="px-2 py-0.5 bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider rounded-md border border-slate-100 font-mono">
                                 ID: {subjectId}
                             </div>
+                            <div className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md border flex items-center gap-1 ${isAtRisk
+                                ? 'bg-red-50 text-red-600 border-red-100'
+                                : 'bg-green-50 text-green-600 border-green-100'
+                                }`}>
+                                {availableCount} / {totalGroups} Grupos
+                            </div>
                         </div>
-                        <h3 className="text-lg sm:text-xl font-extrabold text-slate-800 leading-tight group-hover:text-unicauca-blue transition-colors truncate">
+
+                        <h3 className="text-lg font-extrabold text-slate-800 leading-tight group-hover:text-unicauca-blue transition-colors">
                             {subjectName}
                         </h3>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    {/* Actions */}
+                    <div className="flex items-center gap-1 shrink-0">
                         {isCustom && (
                             <button
                                 onClick={handleEdit}
-                                className="p-3 text-slate-500 hover:text-unicauca-blue hover:bg-blue-50 rounded-2xl transition-all active:scale-90 shadow-sm border border-slate-100 hover:border-blue-100"
+                                className="p-2 text-slate-400 hover:text-unicauca-blue hover:bg-blue-50 rounded-xl transition-all active:scale-90"
                                 title="Editar materia"
                             >
-                                <Pencil size={18} />
+                                <Pencil size={16} />
                             </button>
                         )}
                         <button
                             onClick={handleDelete}
-                            className="p-3 text-slate-500 hover:text-unicauca-red hover:bg-red-50 rounded-2xl transition-all active:scale-90 shadow-sm border border-slate-100 hover:border-red-100"
+                            className="p-2 text-slate-400 hover:text-unicauca-red hover:bg-red-50 rounded-xl transition-all active:scale-90"
                             title="Eliminar materia"
                         >
-                            <Trash2 size={18} />
+                            <Trash2 size={16} />
                         </button>
                     </div>
                 </div>
 
-                <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2 text-left">
-                    <div className="flex items-center gap-2 px-1">
-                        <div className={`w-1 h-4 rounded-full ${isAtRisk ? 'bg-red-500' : 'bg-unicauca-red'}`} />
-                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                            {isAtRisk ? '¡Atención Requerida!' : 'Grupos Disponibles'}
-                        </h4>
-                        <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 ${isAtRisk
-                            ? 'bg-red-50 text-red-600 border-red-100 animate-pulse'
-                            : 'text-slate-400 bg-slate-50 border-slate-100'
-                            }`}>
-                            {isAtRisk ? (
-                                <>
-                                    <AlertTriangle size={10} />
-                                    Selecciona al menos 1
-                                </>
-                            ) : (
-                                <>{availableCount} de {totalGroups} Disponibles</>
-                            )}
-                        </span>
+                {/* Collapsible Trigger */}
+                <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="w-full flex items-center justify-between p-3 bg-slate-50/50 hover:bg-slate-50 border border-slate-100 rounded-xl transition-all group/btn"
+                >
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider group-hover/btn:text-slate-700">
+                        {isExpanded ? 'Ocultar Grupos' : 'Gestionar Grupos'}
+                    </span>
+                    <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''} text-slate-400`}>
+                        <ChevronDown size={18} />
                     </div>
+                </button>
+            </div>
 
-                    <div className="space-y-4">
+            {/* Collapsible Content */}
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                <div className="p-5 pt-0 border-t border-slate-100 bg-slate-50/30">
+                    <div className="mt-4 space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
                         {groups.map((group) => {
                             const isExcluded = isGroupExcluded(group.id, isCustom, subjectName, group.groupCode);
+                            const isIncluded = !isExcluded;
 
                             return (
                                 <div
                                     key={group.groupCode}
+                                    onClick={() => handleToggleGroup(group)}
                                     className={`
-                                        relative rounded-2xl border transition-all duration-300 overflow-hidden
-                                        ${isExcluded
-                                            ? 'bg-slate-50 border-slate-100 opacity-60 grayscale'
-                                            : 'bg-slate-50/50 border-slate-100 hover:bg-white hover:shadow-md border-l-4 border-l-transparent hover:border-l-unicauca-blue'
+                                        group/item relative flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200
+                                        ${isIncluded
+                                            ? 'bg-white border-unicauca-blue/30 shadow-sm'
+                                            : 'bg-slate-50 border-slate-200 opacity-75'
                                         }
                                     `}
                                 >
-                                    <div className="p-4 flex items-start gap-3">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <span className={`
-                                                    px-3 py-1 text-xs font-black rounded-lg shadow-sm transition-colors
-                                                    ${isExcluded ? 'bg-slate-200 text-slate-500' : 'bg-unicauca-blue text-white'}
-                                                `}>
-                                                    Grupo {group.groupCode}
-                                                </span>
-                                                {group.professors && (
-                                                    <div className={`text-xs font-bold truncate ${isExcluded ? 'text-slate-400 line-through' : 'text-slate-600'}`}>
-                                                        {group.professors}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="space-y-2">
-                                                {group.schedules.map((schedule, idx) => (
-                                                    <div key={idx} className={`flex items-center gap-3 text-xs p-2 rounded-xl ${isExcluded ? 'text-slate-400 bg-transparent' : 'text-slate-500 bg-white/50'}`}>
-                                                        <div className="w-8 flex justify-center opacity-60">
-                                                            <div className={`w-1.5 h-1.5 rounded-full ${isExcluded ? 'bg-slate-300' : 'bg-slate-300'}`} />
-                                                        </div>
-                                                        <span className={`font-bold w-20 ${isExcluded ? 'line-through' : 'text-slate-600'}`}>{schedule.dayOfWeek}</span>
-                                                        <span className={`font-medium ${isExcluded ? 'line-through' : ''}`}>{schedule.startTime} - {schedule.endTime}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                    {/* Custom Checkbox */}
+                                    <div className={`
+                                        mt-0.5 shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200
+                                        ${isIncluded
+                                            ? 'bg-unicauca-blue border-unicauca-blue text-white'
+                                            : 'bg-transparent border-slate-300 text-transparent group-hover/item:border-slate-400'
+                                        }
+                                    `}>
+                                        <Check size={12} strokeWidth={4} />
+                                    </div>
 
-                                        <button
-                                            onClick={() => handleToggleGroup(group)}
-                                            className={`
-                                                shrink-0 p-2 rounded-xl transition-all
-                                                ${isExcluded
-                                                    ? 'text-slate-400 hover:text-slate-600 hover:bg-slate-200'
-                                                    : 'text-slate-400 hover:text-unicauca-blue hover:bg-blue-50'
-                                                }
-                                            `}
-                                            title={isExcluded ? "Incluir grupo" : "Excluir grupo"}
-                                        >
-                                            {isExcluded ? <EyeOff size={20} /> : <Eye size={20} />}
-                                        </button>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className={`text-sm font-bold ${isIncluded ? 'text-slate-800' : 'text-slate-500'}`}>
+                                                Grupo {group.groupCode}
+                                            </span>
+                                        </div>
+                                        {group.professors && (
+                                            <div className={`text-xs mb-2 ${isIncluded ? 'text-slate-600' : 'text-slate-400'}`}>
+                                                {group.professors}
+                                            </div>
+                                        )}
+                                        <div className="space-y-1">
+                                            {group.schedules.map((schedule, idx) => (
+                                                <div key={idx} className={`text-[10px] font-mono flex items-center gap-2 ${isIncluded ? 'text-slate-500' : 'text-slate-400'}`}>
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                                                    <span>{schedule.dayOfWeek} {schedule.startTime}-{schedule.endTime}</span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             );

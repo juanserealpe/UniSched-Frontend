@@ -92,19 +92,19 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule }) => {
         return allBlocks;
     }, [schedule]);
 
-    const hourHeight = 4.5; // rem - slightly taller for breathing room
+    const hourHeight = 3.2; // rem - Reduced from 4.5 for better visibility at 100% zoom
 
     return (
         <div className="bg-white rounded-[2rem] shadow-xl border border-slate-200/60 overflow-x-auto custom-scrollbar">
             <div className="min-w-[900px]">
                 {/* Header Days */}
                 <div className="grid grid-cols-7 border-b border-slate-100 sticky top-0 bg-white/90 backdrop-blur-md z-10">
-                    <div className="p-4 text-center text-[10px] font-black text-slate-400 border-r border-slate-50 uppercase tracking-[0.2em]">
+                    <div className="p-3 text-center text-[10px] font-black text-slate-400 border-r border-slate-50 uppercase tracking-[0.2em]">
                         Hora
                     </div>
                     {DAYS.map((day) => (
-                        <div key={day} className="p-4 text-center">
-                            <span className="text-xs font-black text-slate-800 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">
+                        <div key={day} className="p-3 text-center">
+                            <span className="text-[10px] sm:text-xs font-black text-slate-800 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
                                 {DAY_LABELS[day]}
                             </span>
                         </div>
@@ -118,10 +118,10 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule }) => {
                         {HOURS.map((hour) => (
                             <div
                                 key={hour}
-                                className="border-b border-slate-50/50 flex items-start justify-end pr-4"
-                                style={{ height: `${hourHeight}rem`, paddingTop: '0.5rem' }}
+                                className="border-b border-slate-50/50 flex items-start justify-end pr-3"
+                                style={{ height: `${hourHeight}rem`, paddingTop: '0.25rem' }}
                             >
-                                <span className="text-[10px] font-bold text-slate-500 tabular-nums">
+                                <span className="text-[10px] font-bold text-slate-400 tabular-nums">
                                     {hour}:00
                                 </span>
                             </div>
@@ -152,44 +152,29 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule }) => {
                                     .map((block, i) => (
                                         <div
                                             key={`${block.subject.id}-${i}`}
-                                            className="absolute left-[3px] right-[3px] rounded-xl p-2.5 text-white shadow-lg transition-all hover:scale-[1.02] hover:z-20 group cursor-pointer border border-white/20"
+                                            className="absolute left-[2px] right-[2px] rounded-lg p-2 text-white shadow-md transition-all hover:scale-[1.02] hover:z-20 group cursor-pointer border border-white/20 hover:shadow-xl"
                                             style={{
                                                 top: `${(block.top / 100) * hourHeight}rem`,
                                                 height: `${(block.height / 100) * hourHeight - 0.1}rem`,
                                                 backgroundColor: block.color,
                                             }}
                                         >
-                                            <div className="flex flex-col h-full overflow-hidden">
-                                                <div className="text-[10px] font-black leading-tight mb-0.5 line-clamp-2 uppercase tracking-tight">
+                                            <div className="flex flex-col h-full overflow-hidden leading-none">
+                                                <div className="text-[10px] font-black mb-0.5 line-clamp-2 uppercase tracking-tight shrink-0">
                                                     {block.subject.subjectName}
                                                 </div>
-                                                <div className="text-[9px] font-bold opacity-80 flex items-center gap-1">
-                                                    <span className="w-1 h-1 bg-white rounded-full" />
-                                                    G{block.subject.groupCode}
-                                                </div>
 
-                                                {/* Tooltip-like info on hover */}
-                                                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 p-4 bg-slate-900/95 backdrop-blur-md text-white text-xs rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none border border-slate-700">
-                                                    <div className="flex items-center gap-2 mb-2 border-b border-slate-700 pb-2">
-                                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: block.color }} />
-                                                        <span className="font-black uppercase tracking-tight truncate">{block.subject.subjectName}</span>
+                                                <div className="flex flex-col gap-0.5 min-h-0">
+                                                    <div className="text-[9px] font-bold opacity-90 flex items-center gap-1 shrink-0">
+                                                        <span className="w-1 h-1 bg-white/70 rounded-full shrink-0" />
+                                                        G{block.subject.groupCode}
                                                     </div>
-                                                    <div className="space-y-2">
-                                                        <div className="flex justify-between items-center text-[10px]">
-                                                            <span className="text-slate-400 font-bold">GRUPO</span>
-                                                            <span className="font-black text-white">{block.subject.groupCode}</span>
+
+                                                    {block.subject.professors && (
+                                                        <div className="text-[8.5px] font-medium opacity-90 leading-tight line-clamp-[4] break-words">
+                                                            {block.subject.professors}
                                                         </div>
-                                                        <div className="flex justify-between items-center text-[10px]">
-                                                            <span className="text-slate-400 font-bold">HORARIO</span>
-                                                            <span className="font-black text-white">{block.startTime.slice(0, 5)} - {block.endTime.slice(0, 5)}</span>
-                                                        </div>
-                                                        {block.subject.professors && (
-                                                            <div className="pt-2 border-t border-slate-700/50">
-                                                                <div className="text-slate-400 font-bold mb-1 text-[9px]">PROFESOR(ES)</div>
-                                                                <div className="text-[10px] font-medium leading-relaxed italic">{block.subject.professors}</div>
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

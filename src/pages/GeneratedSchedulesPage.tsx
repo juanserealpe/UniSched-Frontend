@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSubjects } from '../context/SubjectContext';
 import { ScheduleGrid } from '../components/ScheduleGrid';
-import { ChevronLeft, ChevronRight, Calendar, Info, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Info, Clock, BookOpen, User, Users } from 'lucide-react';
 import { Header } from '../components/Header';
 
 export const GeneratedSchedulesPage: React.FC = () => {
@@ -48,7 +48,7 @@ export const GeneratedSchedulesPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900">
+        <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900 overflow-hidden">
             {/* Header */}
             <Header
                 subtitle="Página de Resultados"
@@ -85,42 +85,97 @@ export const GeneratedSchedulesPage: React.FC = () => {
             />
 
             {/* Main Content */}
-            <div className="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-6 space-y-6">
+            <div className="flex-1 max-w-[1600px] mx-auto w-full p-4 lg:p-6 overflow-hidden flex flex-col">
 
-                {/* Stats and Info Bar */}
-                <div className="flex flex-col md:flex-row gap-4 items-stretch overflow-auto pb-2">
-                    <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex items-center gap-4 flex-1 min-w-[200px]">
-                        <div className="p-2 bg-blue-50 rounded-lg text-unicauca-blue">
-                            <Clock size={20} />
-                        </div>
-                        <div>
-                            <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">Carga de Horario</div>
-                            <div className="font-bold text-slate-800">
-                                {currentSchedule.length} Materias Oficiales
+                {/* Responsive Grid Layout */}
+                <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_350px] xl:grid-cols-[1fr_400px] gap-6 overflow-hidden">
+
+                    {/* LEFT: Schedule Grid */}
+                    <div className="flex flex-col gap-4 overflow-hidden h-full">
+                        {/* Stats Bar */}
+                        <div className="flex flex-row gap-4 items-stretch shrink-0">
+                            <div className="bg-white rounded-xl p-3 shadow-sm border border-slate-200 flex items-center gap-3 flex-1">
+                                <div className="p-2 bg-blue-50 rounded-lg text-unicauca-blue shrink-0">
+                                    <Clock size={16} />
+                                </div>
+                                <div className="min-w-0">
+                                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider truncate">Carga Académica</div>
+                                    <div className="text-sm font-bold text-slate-800 truncate">
+                                        {currentSchedule.length} Materias
+                                    </div>
+                                </div>
                             </div>
+
+                            {customSubjects.length > 0 && (
+                                <div className="bg-amber-50 rounded-xl p-3 border border-amber-200 flex items-center gap-3 flex-1">
+                                    <div className="p-2 bg-amber-100 rounded-lg text-amber-600 shrink-0">
+                                        <Info size={16} />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="text-xs font-bold text-amber-800 mb-0.5 truncate">Personalizadas ({customSubjects.length})</div>
+                                        <div className="text-[10px] text-amber-700 truncate">Incluidas en validación</div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="relative flex-1 overflow-auto rounded-2xl border border-slate-200 bg-white/50 shadow-sm">
+                            <ScheduleGrid schedule={currentSchedule} />
                         </div>
                     </div>
 
-                    {customSubjects.length > 0 && (
-                        <div className="bg-amber-50 rounded-xl p-4 border border-amber-200 flex items-center gap-4 flex-1 min-w-[200px]">
-                            <div className="p-2 bg-amber-100 rounded-lg text-amber-600">
-                                <Info size={20} />
-                            </div>
-                            <div className="text-xs">
-                                <div className="font-bold text-amber-800 mb-0.5">Materias Custom ({customSubjects.length})</div>
-                                <div className="text-amber-700">Incluidas en la validación de conflictos por el servidor.</div>
-                            </div>
+                    {/* RIGHT: Details Sidebar */}
+                    <div className="hidden lg:flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full">
+                        <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                            <h3 className="font-extrabold text-slate-800 flex items-center gap-2">
+                                <BookOpen size={18} className="text-unicauca-blue" />
+                                Detalle de Materias
+                            </h3>
+                            <p className="text-xs text-slate-500 mt-1">
+                                Configuración seleccionada para esta opción de horario.
+                            </p>
                         </div>
-                    )}
-                </div>
 
-                {/* Grid */}
-                <div className="relative">
-                    <ScheduleGrid schedule={currentSchedule} />
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
+                            {currentSchedule.map((subject, idx) => (
+                                <div key={`${subject.subjectName}-${idx}`} className="p-3 rounded-xl border border-slate-100 bg-slate-50/30 hover:bg-white hover:shadow-md transition-all group">
+                                    <div className="mb-2">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Materia</div>
+                                        <div className="font-bold text-slate-800 text-sm leading-tight group-hover:text-unicauca-blue transition-colors">
+                                            {subject.subjectName}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2 mt-3">
+                                        <div className="bg-white p-2 rounded-lg border border-slate-100">
+                                            <div className="flex items-center gap-1.5 mb-1">
+                                                <Users size={12} className="text-unicauca-red" />
+                                                <span className="text-[10px] font-bold text-slate-500 uppercase">Grupo</span>
+                                            </div>
+                                            <div className="font-mono font-bold text-slate-700 text-xs">
+                                                {subject.groupCode}
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white p-2 rounded-lg border border-slate-100">
+                                            <div className="flex items-center gap-1.5 mb-1">
+                                                <User size={12} className="text-unicauca-blue" />
+                                                <span className="text-[10px] font-bold text-slate-500 uppercase">Docente</span>
+                                            </div>
+                                            <div className="text-xs text-slate-600 font-medium truncate" title={subject.professors || 'Sin asignar'}>
+                                                {subject.professors || 'Sin asignar'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
                 </div>
 
                 {/* Actions Footer Mobile */}
-                <div className="md:hidden fixed bottom-4 left-4 right-4 flex justify-between gap-4">
+                <div className="md:hidden mt-4 flex justify-between gap-4 shrink-0">
                     <button
                         onClick={handlePrev}
                         disabled={currentIndex === 0}
