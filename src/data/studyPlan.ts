@@ -18,12 +18,6 @@ export const studyPlan: Subject[] = [
         unlocks: [],
     },
     {
-        id: 3,
-        name: "Electiva FISH I",
-        semester: 1,
-        unlocks: [],
-    },
-    {
         id: 4,
         name: "Introducción a la Ing. de Sistemas",
         semester: 1,
@@ -47,12 +41,6 @@ export const studyPlan: Subject[] = [
     // =========================
     // S2
     // =========================
-    {
-        id: 7,
-        name: "Electiva FISH II",
-        semester: 2,
-        unlocks: [],
-    },
     {
         id: 8,
         name: "Cálculo II",
@@ -121,12 +109,6 @@ export const studyPlan: Subject[] = [
         semester: 3,
         unlocks: [],
         prerequisite: 8,
-    },
-    {
-        id: 17,
-        name: "Electiva FISH III",
-        semester: 3,
-        unlocks: [],
     },
     {
         id: 18,
