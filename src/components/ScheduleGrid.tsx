@@ -1,3 +1,7 @@
+/**
+ * Schedule Grid component.
+ * Visualizes the weekly schedule of selected subjects.
+ */
 import React, { useMemo } from 'react';
 import type { GeneratedSchedule, ApiSubjectGroup } from '../types';
 
@@ -59,6 +63,10 @@ const timeToMinutes = (timeStr: string) => {
     return (h - START_HOUR) * 60 + m;
 };
 
+/**
+ * Renders a weekly schedule grid with subject blocks.
+ * @param schedule - The list of subject groups to display
+ */
 export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ schedule }) => {
     // Flatten all schedules with their subject info
     const blocks = useMemo(() => {

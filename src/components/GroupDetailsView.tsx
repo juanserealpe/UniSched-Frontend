@@ -1,3 +1,7 @@
+/**
+ * Component to display detailed information about a subject group.
+ * Shows the group code, professor name, and weekly schedule.
+ */
 import React from 'react';
 import type { Schedule } from '../types';
 import { Clock, User } from 'lucide-react';
@@ -17,6 +21,12 @@ const DAY_LABELS: Record<string, string> = {
     SATURDAY: 'Sábado',
 };
 
+/**
+ * Displays the details of a specific subject group.
+ * @param groupCode - The code identifier for the group
+ * @param professors - Name(s) of the professor(s)
+ * @param schedules - List of schedule slots for the group
+ */
 export const GroupDetailsView: React.FC<GroupDetailsViewProps> = ({
     groupCode,
     professors,

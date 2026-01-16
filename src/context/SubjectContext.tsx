@@ -1,3 +1,7 @@
+/**
+ * Context for managing subject selection and schedule generation state.
+ * Handles state validation, local storage persistence, and custom subject management.
+ */
 import React, { createContext, useContext, useMemo, useState, useCallback } from 'react';
 import type { SubjectGroup, SubjectWithState, ValidationResponse, GeneratedSchedule } from '../types';
 import { studyPlan } from '../data/studyPlan';
@@ -33,6 +37,10 @@ interface SubjectContextType {
 
 const SubjectContext = createContext<SubjectContextType | undefined>(undefined);
 
+/**
+ * Provider component that wraps the application and supplies subject context.
+ * @param children - Child components
+ */
 export function SubjectProvider({ children }: { children: React.ReactNode }) {
     const [selectedIds, setSelectedIds] = useState<number[]>(() => {
         const saved = localStorage.getItem('selectedIds');
@@ -124,18 +132,10 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
     const toggleSubject = useCallback((id: number) => {
         setSelectedIds(prev => {
             if (prev.includes(id)) {
-                // Deselect
-                // Logic: Just remove it.
-                // Prompt says: "3. Si está SELECCIONADA → Deseleccionarla (con confirmación si afecta otras)"
-                // For now, simple toggle. We can handle confirmation in UI or here. 
-                // Staying simple for now as requested by architecture (UI handles confirmation usually).
+                // Deselect: Remove from list
                 return prev.filter(sId => sId !== id);
             } else {
-                // Select
-                // Logic: "4. Si tiene obligatoria → Auto-seleccionar la pareja o mostrar warning"
-                // Prompt Check: "6. Sistema muestra warning... 7. Usuario selecciona el lab"
-                // This implies NO auto-select, but manual selection.
-                // So just add it.
+                // Select: Add to list
                 return [...prev, id];
             }
         });
@@ -211,6 +211,10 @@ export function SubjectProvider({ children }: { children: React.ReactNode }) {
     );
 }
 
+/**
+ * Custom hook to consume the SubjectContext.
+ * @throws Error if used outside of SubjectProvider
+ */
 export function useSubjects() {
     const context = useContext(SubjectContext);
     if (context === undefined) {

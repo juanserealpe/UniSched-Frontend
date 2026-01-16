@@ -1,3 +1,7 @@
+/**
+ * Card component for individual subjects in the study plan.
+ * Displays subject info and handle selection status.
+ */
 import React from 'react';
 import type { SubjectWithState } from '../types';
 import { Lock, Check, AlertCircle, Info } from 'lucide-react';
@@ -8,6 +12,10 @@ interface SubjectCardProps {
     subject: SubjectWithState;
 }
 
+/**
+ * Interactive card representing a subject.
+ * @param subject - The subject data object with current status
+ */
 export const SubjectCard: React.FC<SubjectCardProps> = ({ subject }) => {
     const { toggleSubject } = useSubjects();
 

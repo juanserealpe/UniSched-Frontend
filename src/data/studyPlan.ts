@@ -1,3 +1,7 @@
+/**
+ * Static data definition for the Systems Engineering study plan.
+ * Contains the list of official subjects with their dependencies and semester information.
+ */
 import type { Subject } from '../types';
 
 export const studyPlan: Subject[] = [

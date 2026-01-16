@@ -1,3 +1,7 @@
+/**
+ * Type definitions for the application.
+ * Contains interfaces for subjects, schedules, and API communication.
+ */
 export type SubjectStatus = 'available' | 'blocked' | 'selected';
 
 export interface Subject {

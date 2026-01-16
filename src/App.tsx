@@ -1,3 +1,7 @@
+/**
+ * Main application component.
+ * Sets up the router and context provider structure.
+ */
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { SubjectProvider, useSubjects } from './context/SubjectContext';
@@ -10,6 +14,10 @@ import { Plus, ArrowRight } from 'lucide-react';
 import { Header } from './components/Header';
 import type { ValidationResponse } from './types';
 
+/**
+ * Layout component for the main view (study plan and side panel).
+ * Handles the initial validation flow before navigating to offerings.
+ */
 const MainLayout = () => {
   const navigate = useNavigate();
   const { selectedSubjectsList, setValidationData } = useSubjects();
@@ -117,6 +125,10 @@ const MainLayout = () => {
   );
 };
 
+/**
+ * Root component of the application.
+ * Configures global providers (Router, Subjects) and defines routes.
+ */
 function App() {
   return (
     <BrowserRouter>

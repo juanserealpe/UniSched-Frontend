@@ -1,3 +1,7 @@
+/**
+ * Modal component for adding or editing custom subjects.
+ * Allows users to define custom subject details including multiple groups and schedules.
+ */
 import React, { useState } from 'react';
 import { Modal } from './Modal';
 import type { Schedule } from '../types';
@@ -18,11 +22,17 @@ interface CustomGroup {
 
 const DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'] as const;
 
+/**
+ * Component for managing custom subject creation and editing.
+ * @param isOpen - Controls the visibility of the modal
+ * @param onClose - Handler to close the modal
+ * @param initialData - Optional data for editing an existing subject
+ */
 export const AddCustomSubjectModal: React.FC<AddCustomSubjectModalProps> = ({ isOpen, onClose, initialData }) => {
     const [name, setName] = useState('');
     const [groups, setGroups] = useState<CustomGroup[]>([]);
 
-    // Estado para el grupo actual que se está editando
+    // State for the current group being edited
     const [currentGroupCode, setCurrentGroupCode] = useState('');
     const [currentProfessors, setCurrentProfessors] = useState('');
     const [currentDay, setCurrentDay] = useState<Schedule['dayOfWeek']>('MONDAY');
@@ -156,7 +166,7 @@ export const AddCustomSubjectModal: React.FC<AddCustomSubjectModalProps> = ({ is
             updateCustomSubject(initialData.name, name.trim(), groups);
         } else {
             // New mode
-            // Crear la materia custom con todos sus grupos
+            // Create custom subject with all its groups
             groups.forEach((group) => {
                 const customSubject = {
                     id: `custom-${crypto.randomUUID()}`,

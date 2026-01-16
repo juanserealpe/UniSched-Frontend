@@ -1,3 +1,7 @@
+/**
+ * Generic Modal component.
+ * Provides a reusable modal overlay with header, body, and footer sections.
+ */
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 
@@ -9,6 +13,14 @@ interface ModalProps {
     footer?: React.ReactNode;
 }
 
+/**
+ * Reusable Modal dialog component.
+ * @param isOpen - Controls visibility
+ * @param onClose - Handler called when closing the modal
+ * @param title - Modal title
+ * @param children - Modal content
+ * @param footer - Optional footer content
+ */
 export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer }) => {
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => {

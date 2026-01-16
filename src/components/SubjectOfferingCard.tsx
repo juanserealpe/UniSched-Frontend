@@ -1,3 +1,7 @@
+/**
+ * Component for displaying subject offerings (groups and schedules).
+ * Allows users to view and toggle exclusion of specific groups.
+ */
 import React, { useState } from 'react';
 import { Trash2, Pencil, ChevronDown, Check } from 'lucide-react';
 import type { ApiSubjectGroup } from '../types';
@@ -12,6 +16,14 @@ interface SubjectOfferingCardProps {
     onEdit?: () => void;
 }
 
+/**
+ * Detailed card for a subject in the offerings view.
+ * @param subjectName - Name of the subject
+ * @param subjectId - ID of the subject
+ * @param groups - List of available groups for this subject
+ * @param isCustom - Whether the subject is user-defined
+ * @param onEdit - Callback for editing (only for custom subjects)
+ */
 export const SubjectOfferingCard: React.FC<SubjectOfferingCardProps> = ({
     subjectName,
     subjectId,

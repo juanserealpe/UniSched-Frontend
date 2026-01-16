@@ -1,3 +1,7 @@
+/**
+ * Component to manage and display the list of selected subjects.
+ * Allows removing subjects and adding custom subjects.
+ */
 import React, { useState, useMemo } from 'react';
 import { useSubjects } from '../context/SubjectContext';
 import { Trash2, Pencil, BookOpenCheck } from 'lucide-react';
@@ -15,7 +19,6 @@ export const SelectedSubjectsPanel: React.FC = () => {
     const groupedSubjects = useMemo(() => {
         const official = selectedSubjectsList.filter((s: any) => !s.isCustom);
 
-        // Group custom subjects by name
         const customGrouped = new Map<string, typeof customSubjects>();
         customSubjects.forEach(cs => {
             if (!customGrouped.has(cs.subjectName)) {

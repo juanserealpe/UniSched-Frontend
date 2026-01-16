@@ -1,3 +1,7 @@
+/**
+ * Application header component.
+ * Displays the application logo, title, and optional navigation elements.
+ */
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BookOpenCheck } from 'lucide-react';
@@ -9,6 +13,13 @@ interface HeaderProps {
     rightElement?: React.ReactNode;
 }
 
+/**
+ * Header component for the application layout.
+ * @param subtitle - Optional subtitle text displayed next to the logo
+ * @param showBackButton - Whether to show a back button
+ * @param onBackButtonClick - Custom handler for the back button
+ * @param rightElement - Optional component to render on the right side
+ */
 export const Header: React.FC<HeaderProps> = ({
     subtitle,
     showBackButton = false,

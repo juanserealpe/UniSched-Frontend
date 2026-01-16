@@ -1,3 +1,7 @@
+/**
+ * Page component for viewing and managing selected subjects.
+ * Displays available groups (offerings) and allows schedule generation.
+ */
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSubjects } from '../context/SubjectContext';
@@ -7,6 +11,11 @@ import { Header } from '../components/Header';
 import { AddCustomSubjectModal } from '../components/AddCustomSubjectModal';
 import type { ApiSubjectGroup, CustomSubjectRequest } from '../types';
 
+/**
+ * Main offerings page.
+ * Aggregates official and custom subjects, allows group selection/exclusion,
+ * and triggers schedule generation.
+ */
 export const AcademicOfferingsPage: React.FC = () => {
     const navigate = useNavigate();
     const {

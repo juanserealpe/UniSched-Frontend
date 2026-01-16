@@ -1,5 +1,16 @@
+/**
+ * Validation utility functions for subject selection.
+ * Handles state calculation, dependency resolution (ancestors/descendants), and blocking logic.
+ */
 import type { Subject, SubjectWithState } from '../types';
 
+/**
+ * Calculates the state (available, selected, blocked) for all subjects based on the current selection.
+ * Enforces prerequisites and blocks conflicting subjects.
+ * @param studyPlan - The full list of subjects
+ * @param selectedIds - Array of currently selected subject IDs
+ * @returns Array of subjects with their calculated status
+ */
 export function calculateSubjectStates(studyPlan: Subject[], selectedIds: number[]): SubjectWithState[] {
     // Helpers for recursion
     const getAllDescendants = (subjectId: number, visited = new Set<number>()): number[] => {
@@ -55,12 +66,8 @@ export function calculateSubjectStates(studyPlan: Subject[], selectedIds: number
         });
     });
 
-    // START FIX: Propagate blocking to mandatory partners
-    // If a subject is blocked (e.g. it is a descendant of a selected subject),
-    // its mandatory partner (e.g. Lab) should also be blocked.
-    // We iterate over the initial blockedIds to find partners to block.
-    // Use a temp array to avoid modifying the Set while iterating if the engine doesn't support it,
-    // though Set iteration is usually safe for additions in newer JS, a separate loop is clearer.
+    // Propagate blocking to mandatory partners
+    // If a subject is blocked its mandatory partner (e.g. Lab) should also be blocked.
     const initialBlockedIds = Array.from(blockedIds);
     initialBlockedIds.forEach(blockedId => {
         const subject = studyPlan.find(s => s.id === blockedId);
@@ -73,11 +80,11 @@ export function calculateSubjectStates(studyPlan: Subject[], selectedIds: number
     return studyPlan.map(subject => {
         let result: SubjectWithState;
 
-        // 1. Si está seleccionada
+        // 1. Check if selected
         if (selectedIds.includes(subject.id)) {
             result = { ...subject, status: 'selected' };
         }
-        // 2. Si está en la lista de bloqueadosrecursivos
+        // 2. Check if blocked
         else if (blockedIds.has(subject.id)) {
             result = {
                 ...subject,
@@ -85,7 +92,7 @@ export function calculateSubjectStates(studyPlan: Subject[], selectedIds: number
                 blockReason: 'Conflicto con materia seleccionada (dependencia directa o indirecta)'
             };
         }
-        // Disponible
+        // Available
         else {
             result = { ...subject, status: 'available' };
         }

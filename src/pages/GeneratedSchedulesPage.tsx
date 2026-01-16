@@ -1,3 +1,7 @@
+/**
+ * Page component for displaying generated schedules.
+ * Shows valid schedule options in a grid and allows navigation between them.
+ */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSubjects } from '../context/SubjectContext';
@@ -5,6 +9,10 @@ import { ScheduleGrid } from '../components/ScheduleGrid';
 import { ChevronLeft, ChevronRight, Calendar, Info, Clock, BookOpen, User, Users } from 'lucide-react';
 import { Header } from '../components/Header';
 
+/**
+ * Displays the list of generated schedule combinations.
+ * Provides controls for navigating through different schedule options.
+ */
 export const GeneratedSchedulesPage: React.FC = () => {
     const navigate = useNavigate();
     const { generatedSchedules, customSubjects } = useSubjects();
